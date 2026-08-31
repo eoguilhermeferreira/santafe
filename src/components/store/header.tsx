@@ -37,7 +37,7 @@ export function Header({ categories }: { categories: Category[] }) {
         <div className="flex items-center gap-4">
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Abrir menu">
+              <Button variant="ghost" size="icon" aria-label="Abrir menu">
                 <Menu />
               </Button>
             </SheetTrigger>
@@ -64,18 +64,6 @@ export function Header({ categories }: { categories: Category[] }) {
               </nav>
             </SheetContent>
           </Sheet>
-
-          <nav className="hidden items-center gap-5 lg:flex">
-            {topLevel.slice(0, 8).map((category) => (
-              <Link
-                key={category.id}
-                href={`/categoria/${category.slug}`}
-                className="text-sm font-medium text-foreground/80 hover:text-accent"
-              >
-                {category.name}
-              </Link>
-            ))}
-          </nav>
         </div>
 
         <Link
