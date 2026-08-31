@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { AddToCart } from "@/components/store/add-to-cart";
+import { BackButton } from "@/components/store/back-button";
 import { ProductCard } from "@/components/store/product-card";
 import { ProductGallery } from "@/components/store/product-gallery";
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +33,8 @@ export default async function ProdutoPage({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      <nav className="mb-6 flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
+      <BackButton />
+      <nav className="mb-6 mt-2 flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
         <Link href="/" className="hover:text-accent">Início</Link>
         <span>/</span>
         {product.categories && (

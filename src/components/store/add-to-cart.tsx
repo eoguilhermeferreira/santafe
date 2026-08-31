@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Minus, Plus, ShoppingBag, Zap } from "lucide-react";
+import { Minus, Plus, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 
 import { useCart } from "@/components/cart/cart-provider";
@@ -107,7 +107,7 @@ export function AddToCart({ product }: { product: ProductWithRelations }) {
             </Button>
           </div>
           <Button size="lg" className="w-full" onClick={handleBuyNow}>
-            <Zap /> Comprar agora
+            Comprar agora
           </Button>
         </div>
       ) : (
