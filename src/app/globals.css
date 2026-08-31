@@ -1,0 +1,121 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --radius: 0.5rem;
+
+  /* Paleta neutra provisória — logo, cores e fonte oficiais da Santa Fé
+     ainda pendentes com a cliente. Trocar os tokens abaixo quando
+     chegarem (ver README, seção "Identidade visual"). */
+  --background: #faf9f5;
+  --foreground: #191914;
+  --card: #ffffff;
+  --card-foreground: #191914;
+  --popover: #ffffff;
+  --popover-foreground: #191914;
+
+  --primary: #141414;
+  --primary-foreground: #f7f5ef;
+
+  --secondary: #efece4;
+  --secondary-foreground: #1f1f1c;
+
+  --muted: #f1efe7;
+  --muted-foreground: #6b6a5f;
+
+  --accent: #c9a15c;
+  --accent-foreground: #201804;
+
+  --destructive: #b3401f;
+  --destructive-foreground: #fef6f2;
+
+  --border: #e5e2d6;
+  --input: #e5e2d6;
+  --ring: #141414;
+
+  --chart-1: #141414;
+  --chart-2: #c9a15c;
+  --chart-3: #3f3f3f;
+  --chart-4: #9c7a3c;
+  --chart-5: #6b6b6b;
+}
+
+.dark {
+  --background: #0f1210;
+  --foreground: #f2f0e8;
+  --card: #171b18;
+  --card-foreground: #f2f0e8;
+  --popover: #171b18;
+  --popover-foreground: #f2f0e8;
+
+  --primary: #f2ede2;
+  --primary-foreground: #14110a;
+
+  --secondary: #1c1c1a;
+  --secondary-foreground: #f2f0e8;
+
+  --muted: #1c1c1a;
+  --muted-foreground: #a4a294;
+
+  --accent: #dcb872;
+  --accent-foreground: #20180a;
+
+  --destructive: #e2694a;
+  --destructive-foreground: #fef6f2;
+
+  --border: #2a2a27;
+  --input: #2a2a27;
+  --ring: #f2ede2;
+
+  --chart-1: #f2ede2;
+  --chart-2: #dcb872;
+  --chart-3: #a4a294;
+  --chart-4: #c9a15c;
+  --chart-5: #6b6b68;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
