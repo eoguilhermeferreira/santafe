@@ -22,6 +22,11 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "d8j0ntlcm91z4.cloudfront.net",
       },
+      {
+        // Fotos de banco de imagens usadas nos banners e produtos de exemplo.
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
     ],
   },
 };
