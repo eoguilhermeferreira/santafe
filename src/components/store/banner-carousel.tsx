@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import * as React from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import type { Banner } from "@/types/database.types";
@@ -70,20 +69,6 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
 
       {banners.length > 1 && (
         <>
-          <button
-            aria-label="Banner anterior"
-            onClick={() => setIndex((current) => (current - 1 + banners.length) % banners.length)}
-            className="absolute left-3 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 text-foreground shadow hover:bg-background"
-          >
-            <ChevronLeft className="size-4" />
-          </button>
-          <button
-            aria-label="Próximo banner"
-            onClick={() => setIndex((current) => (current + 1) % banners.length)}
-            className="absolute right-3 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 text-foreground shadow hover:bg-background"
-          >
-            <ChevronRight className="size-4" />
-          </button>
           <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
             {banners.map((b, i) => (
               <button
