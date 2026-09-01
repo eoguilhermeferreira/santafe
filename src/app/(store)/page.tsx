@@ -68,6 +68,14 @@ export default async function HomePage() {
       </Reveal>
 
       <Reveal>
+        <PromoSquareBanner
+          imageUrl="/images/sagrada-familia.jpg"
+          eyebrow="Devoção"
+          title="Sagrada Família"
+        />
+      </Reveal>
+
+      <Reveal>
         <PromoBanner
           imageUrl="https://images.unsplash.com/photo-1676200259384-b2900d8478a3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
           eyebrow="Atendimento"
