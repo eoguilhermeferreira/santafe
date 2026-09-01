@@ -27,11 +27,13 @@ export function ScrollVideoBanner({
 
     video.muted = true;
 
+    const viewportHeight = () => window.visualViewport?.height ?? window.innerHeight;
+
     const updateFrame = () => {
       const duration = durationRef.current;
       if (!duration) return;
       const rect = wrapper.getBoundingClientRect();
-      const scrollable = rect.height - window.innerHeight;
+      const scrollable = rect.height - viewportHeight();
       if (scrollable <= 0) return;
       const progress = Math.min(1, Math.max(0, -rect.top / scrollable));
       video.currentTime = progress * duration;
@@ -39,9 +41,25 @@ export function ScrollVideoBanner({
 
     const handleLoadedMetadata = () => {
       durationRef.current = video.duration || 0;
-      // Alguns navegadores (principalmente no iOS) só decodificam frames
-      // depois de um play() real, mesmo que pausado logo em seguida.
-      video.play().then(() => video.pause()).catch(() => {});
+      // Alguns navegadores (principalmente no iOS) só decodificam o primeiro
+      // frame depois de um play() de verdade — pausar cedo demais (ex: no
+      // .then() da promise) pode acontecer antes de qualquer frame ser
+      // pintado na tela, deixando o vídeo em branco. Espera o evento
+      // "playing" (decodificação já rodando) antes de pausar.
+      const warmUp = () => {
+        const onPlaying = () => {
+          video.removeEventListener("playing", onPlaying);
+          requestAnimationFrame(() => {
+            video.pause();
+            updateFrame();
+          });
+        };
+        video.addEventListener("playing", onPlaying);
+        video.play().catch(() => {
+          video.removeEventListener("playing", onPlaying);
+        });
+      };
+      warmUp();
       updateFrame();
     };
     video.addEventListener("loadedmetadata", handleLoadedMetadata);
@@ -61,16 +79,18 @@ export function ScrollVideoBanner({
       });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
 
     return () => {
       video.removeEventListener("loadedmetadata", handleLoadedMetadata);
       window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
     };
   }, []);
 
   return (
     <div ref={wrapperRef} className="relative h-[250vh] w-full">
-      <div className="sticky top-0 h-screen w-full overflow-hidden">
+      <div className="sticky top-0 h-dvh w-full overflow-hidden">
         <video
           ref={videoRef}
           src={videoUrl}
@@ -82,8 +102,8 @@ export function ScrollVideoBanner({
           disableRemotePlayback
           className="absolute inset-0 size-full object-cover"
         />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-background to-transparent sm:h-40" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background to-transparent sm:h-40" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-background/80 to-transparent sm:h-16" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-background/80 to-transparent sm:h-16" />
       </div>
     </div>
   );
