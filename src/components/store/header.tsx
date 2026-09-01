@@ -75,8 +75,8 @@ export function Header({ categories }: { categories: Category[] }) {
           <Image
             src="/logo-santa-fe.png"
             alt={storeConfig.name}
-            width={480}
-            height={479}
+            width={640}
+            height={638}
             priority
             className="h-14 w-auto sm:h-16"
           />
