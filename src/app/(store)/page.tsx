@@ -3,6 +3,7 @@ import { CategoryGrid } from "@/components/store/category-grid";
 import { PromoBanner } from "@/components/store/promo-banner";
 import { ProductSection } from "@/components/store/product-section";
 import { Reveal } from "@/components/store/reveal";
+import { ScrollVideoBanner } from "@/components/store/scroll-video-banner";
 import { storeConfig } from "@/config/store";
 import {
   getActiveBanners,
@@ -55,11 +56,12 @@ export default async function HomePage() {
         <ProductSection title="Novidades" href="/produtos" products={novidades} />
       </Reveal>
 
-      {/*
-        Banner de vídeo com scroll ainda aguardando o arquivo final do
-        santo — ScrollVideoBanner (src/components/store/scroll-video-banner.tsx)
-        já está pronto, é só colocar o vídeo em /public/videos e reativar aqui.
-      */}
+      <Reveal>
+        <ScrollVideoBanner
+          videoUrl="/videos/sao-miguel-teste.mp4"
+          posterUrl="/videos/sao-miguel-teste-poster.jpg"
+        />
+      </Reveal>
 
       <Reveal>
         <ProductSection title="Ofertas" href="/produtos" products={ofertas} />
