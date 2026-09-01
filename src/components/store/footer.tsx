@@ -89,8 +89,23 @@ export function Footer() {
         )}
       </div>
 
-      <div className="border-t border-white/10 py-4 text-center text-xs text-white/50">
-        © {new Date().getFullYear()} {storeConfig.name}. Todos os direitos reservados.
+      <div className="border-t border-white/10 px-4 py-4 text-center text-xs text-white/50">
+        <p>
+          © {new Date().getFullYear()}, Santa Fé Artigos Católicos. É vedada qualquer reprodução
+          total ou parcial, nos termos da Lei nº 9.610/98. Todos os direitos reservados.
+        </p>
+        <p className="mt-1">CNPJ: {storeConfig.cnpj}</p>
+        <p className="mt-3">
+          Feito pela{" "}
+          <a
+            href="https://instagram.com/agencynodex"
+            target="_blank"
+            rel="noreferrer"
+            className="font-medium text-white/70 hover:text-accent"
+          >
+            Agência Nodex
+          </a>
+        </p>
       </div>
     </footer>
   );
