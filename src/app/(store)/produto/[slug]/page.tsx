@@ -56,11 +56,6 @@ export default async function ProdutoPage({
         />
 
         <div className="flex flex-col gap-4">
-          {product.brand && (
-            <span className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-              {product.brand}
-            </span>
-          )}
           <h1 className="font-display text-2xl font-semibold sm:text-3xl">{product.name}</h1>
 
           <div className="flex items-center gap-3">

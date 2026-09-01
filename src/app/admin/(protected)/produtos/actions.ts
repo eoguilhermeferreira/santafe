@@ -8,7 +8,6 @@ import { createClient } from "@/lib/supabase/server";
 
 const productFormSchema = z.object({
   name: z.string().trim().min(2, "Nome muito curto"),
-  brand: z.string().trim().nullable(),
   description: z.string().trim().nullable(),
   category_id: z.string().uuid().nullable(),
   price: z.number().nonnegative(),

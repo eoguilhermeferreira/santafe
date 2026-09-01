@@ -54,11 +54,6 @@ export function ProductCard({ product }: { product: ProductWithRelations }) {
       </div>
 
       <div className="flex flex-1 flex-col gap-1 p-3">
-        {product.brand && (
-          <span className="text-xs uppercase tracking-wide text-muted-foreground">
-            {product.brand}
-          </span>
-        )}
         <h3 className="line-clamp-2 text-sm font-medium text-foreground">{product.name}</h3>
         <div className="mt-auto pt-1">
           {product.promo_price ? (
