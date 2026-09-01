@@ -10,19 +10,21 @@ export function CategoryGrid({ categories }: { categories: Category[] }) {
   return (
     <section className="space-y-4">
       <h2 className="font-display text-xl font-semibold sm:text-2xl">Categorias</h2>
-      <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+      <div className="flex gap-5 overflow-x-auto pb-1 sm:gap-6">
         {topLevel.map((category) => {
           const Icon = getCategoryIcon(category.icon);
           return (
             <Link
               key={category.id}
               href={`/categoria/${category.slug}`}
-              className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 text-center transition-colors hover:border-accent hover:bg-secondary/60"
+              className="group flex shrink-0 flex-col items-center gap-2"
             >
-              <span className="flex size-11 items-center justify-center rounded-full bg-accent/10 text-accent">
-                <Icon className="size-5" />
+              <span className="flex size-16 items-center justify-center rounded-full bg-accent/10 text-accent transition-colors group-hover:bg-accent/20 sm:size-20">
+                <Icon className="size-7 sm:size-8" />
               </span>
-              <span className="text-xs font-medium text-foreground">{category.name}</span>
+              <span className="w-16 text-center text-xs font-medium text-foreground sm:w-20">
+                {category.name}
+              </span>
             </Link>
           );
         })}
