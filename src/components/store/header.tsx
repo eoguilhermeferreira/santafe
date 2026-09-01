@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as React from "react";
@@ -68,9 +69,17 @@ export function Header({ categories }: { categories: Category[] }) {
 
         <Link
           href="/"
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 font-display text-xl font-semibold tracking-tight text-accent"
+          aria-label={storeConfig.name}
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
         >
-          {storeConfig.name}
+          <Image
+            src="/logo-santa-fe.png"
+            alt={storeConfig.name}
+            width={480}
+            height={479}
+            priority
+            className="h-14 w-auto sm:h-16"
+          />
         </Link>
 
         <div className="ml-auto flex items-center gap-2">
