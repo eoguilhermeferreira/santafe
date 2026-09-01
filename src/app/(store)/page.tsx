@@ -1,6 +1,6 @@
 import { BannerCarousel } from "@/components/store/banner-carousel";
 import { CategoryGrid } from "@/components/store/category-grid";
-import { PromoBanner } from "@/components/store/promo-banner";
+import { PromoBanner, PromoSquareBanner } from "@/components/store/promo-banner";
 import { ProductSection } from "@/components/store/product-section";
 import { Reveal } from "@/components/store/reveal";
 import { storeConfig } from "@/config/store";
@@ -53,6 +53,14 @@ export default async function HomePage() {
 
       <Reveal>
         <ProductSection title="Novidades" href="/produtos" products={novidades} />
+      </Reveal>
+
+      <Reveal>
+        <PromoSquareBanner
+          imageUrl="/images/sao-miguel-arcanjo.jpg"
+          eyebrow="Devoção"
+          title="São Miguel Arcanjo"
+        />
       </Reveal>
 
       <Reveal>

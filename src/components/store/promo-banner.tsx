@@ -73,7 +73,7 @@ export function PromoSquareBanner({
 }: Partial<Pick<PromoBannerBaseProps, "buttonLabel" | "href">> &
   Omit<PromoBannerBaseProps, "buttonLabel" | "href">) {
   const className =
-    "group relative block aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border sm:aspect-[16/10] lg:aspect-[16/9]";
+    "group relative mx-auto block aspect-[4/5] w-full max-w-md overflow-hidden rounded-2xl border border-border sm:max-w-lg lg:max-w-2xl";
 
   const content = (
     <>
