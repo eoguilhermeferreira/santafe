@@ -12,7 +12,7 @@ export const storeConfig = {
   contact: {
     whatsapp: "5514997630452",
     email: "santafeartigoscatolicos@gmail.com",
-    instagram: "",
+    instagram: "https://instagram.com/santafeartigoscatolicos",
     tiktok: "",
     facebook: "",
   },
