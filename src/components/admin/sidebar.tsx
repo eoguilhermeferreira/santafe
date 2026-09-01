@@ -29,7 +29,7 @@ export function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-border bg-card">
+    <aside className="sticky top-0 flex h-screen w-60 shrink-0 flex-col overflow-y-auto border-r border-border bg-card">
       <div className="border-b border-border p-4">
         <span className="font-display text-lg font-semibold text-accent">{storeConfig.name}</span>
         <p className="text-xs text-muted-foreground">Painel administrativo</p>
