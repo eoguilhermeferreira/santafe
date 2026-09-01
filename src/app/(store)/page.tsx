@@ -7,17 +7,21 @@ import { storeConfig } from "@/config/store";
 import {
   getActiveBanners,
   getCategories,
+  getProducts,
   getProductsByHomeSection,
 } from "@/lib/queries";
 
 export default async function HomePage() {
-  const [banners, categories, maisVendidos, novidades, ofertas] = await Promise.all([
-    getActiveBanners(),
-    getCategories(),
-    getProductsByHomeSection("mais_vendidos"),
-    getProductsByHomeSection("novidades"),
-    getProductsByHomeSection("ofertas"),
-  ]);
+  const [banners, categories, maisVendidos, novidades, ofertas, imagens, tercos] =
+    await Promise.all([
+      getActiveBanners(),
+      getCategories(),
+      getProductsByHomeSection("mais_vendidos"),
+      getProductsByHomeSection("novidades"),
+      getProductsByHomeSection("ofertas"),
+      getProducts({ categorySlug: "imagens", pageSize: 8 }),
+      getProducts({ categorySlug: "tercos", pageSize: 8 }),
+    ]);
 
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-14 px-4 py-6 sm:py-8">
@@ -73,6 +77,14 @@ export default async function HomePage() {
           eyebrow="Devoção"
           title="Sagrada Família"
         />
+      </Reveal>
+
+      <Reveal>
+        <ProductSection title="Imagens" href="/categoria/imagens" products={imagens.products} />
+      </Reveal>
+
+      <Reveal>
+        <ProductSection title="Terços" href="/categoria/tercos" products={tercos.products} />
       </Reveal>
 
       <Reveal>
