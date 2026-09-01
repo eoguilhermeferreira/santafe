@@ -74,7 +74,7 @@ export function PromoSquareBanner({
   return (
     <Link
       href={href}
-      className="group relative block aspect-square w-full overflow-hidden rounded-2xl border border-border sm:aspect-[16/10] lg:aspect-square"
+      className="group relative block aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border sm:aspect-[16/9] lg:aspect-[21/9]"
     >
       <Image
         src={imageUrl}

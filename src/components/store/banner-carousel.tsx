@@ -33,17 +33,19 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
         className="object-cover"
       />
       {(banner.title || banner.description || banner.button_label) && (
-        <div className="absolute inset-0 flex flex-col justify-end gap-2 bg-gradient-to-t from-black/60 via-black/10 to-transparent p-6 sm:p-10">
+        <div className="absolute inset-0 flex flex-col justify-end gap-1.5 bg-gradient-to-t from-black/70 via-black/15 to-transparent p-4 sm:gap-2 sm:p-6 lg:p-10">
           {banner.title && (
-            <h2 className="font-display text-2xl font-semibold text-white sm:text-4xl">
+            <h2 className="font-display text-lg font-semibold text-white sm:text-2xl lg:text-4xl">
               {banner.title}
             </h2>
           )}
           {banner.description && (
-            <p className="max-w-md text-sm text-white/90 sm:text-base">{banner.description}</p>
+            <p className="line-clamp-2 max-w-md text-xs text-white/90 sm:text-sm lg:text-base">
+              {banner.description}
+            </p>
           )}
           {banner.button_label && (
-            <span className="mt-2 inline-flex w-fit items-center rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground">
+            <span className="mt-1 inline-flex w-fit items-center rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-accent-foreground sm:mt-2 sm:px-4 sm:py-2 sm:text-sm">
               {banner.button_label}
             </span>
           )}
@@ -53,23 +55,23 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
   );
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-border bg-muted">
+    <div className="relative overflow-hidden rounded-xl border border-border bg-muted sm:rounded-2xl">
       {banner.button_link ? (
         <Link
           href={banner.button_link}
-          className="relative block aspect-[16/7] w-full sm:aspect-[21/7]"
+          className="relative block aspect-[4/3] w-full sm:aspect-[16/9] lg:aspect-[21/9]"
         >
           {bannerContent}
         </Link>
       ) : (
-        <div className="relative block aspect-[16/7] w-full sm:aspect-[21/7]">
+        <div className="relative block aspect-[4/3] w-full sm:aspect-[16/9] lg:aspect-[21/9]">
           {bannerContent}
         </div>
       )}
 
       {banners.length > 1 && (
         <>
-          <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
+          <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5 sm:bottom-3">
             {banners.map((b, i) => (
               <button
                 key={b.id}
