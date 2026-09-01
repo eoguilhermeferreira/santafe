@@ -5,9 +5,11 @@ import * as React from "react";
 /**
  * Seção de vídeo em tela cheia, largura total (fora do container da home),
  * que fica "grudada" na tela enquanto a pessoa rola por cima dela — como um
- * buraco que se abre no meio do site. O vídeo não toca sozinho: o avanço dele
- * é controlado pela rolagem, só começa quando a seção chega no topo e some
- * de novo (com degradê) quando ela termina.
+ * buraco que se abre no meio do site. O vídeo não avança sozinho visualmente:
+ * ele fica tocando (mudo, em loop) só pra manter o Safari decodificando
+ * frames de verdade, mas a cada frame de animação a gente força o
+ * currentTime pra bater com a posição do scroll — na prática trava o
+ * vídeo na posição do scroll, sem deixar ele "andar" sozinho.
  *
  * A altura da área presa é calculada em pixels via JS (não em vh/dvh) —
  * unidades de viewport têm suporte inconsistente entre navegadores mobile,
@@ -38,12 +40,10 @@ export function ScrollVideoBanner({
     };
   }, []);
 
-  // O Safari do iPhone não baixa os bytes do vídeo (só os metadados) até
-  // um play() de verdade acontecer, mesmo com preload="auto" — então
-  // buscar um frame no meio do vídeo via currentTime, sem nunca ter
-  // dado play(), pode não ter dado nem carregado, e aparece preto. Baixa
-  // o arquivo inteiro (é pequeno, ~2MB) como blob e usa isso como fonte:
-  // aí o seek não depende mais de rede nenhuma.
+  // O Safari do iOS só baixa os bytes do vídeo de verdade depois de um
+  // play() acontecer (preload="auto" é ignorado) — busca o arquivo inteiro
+  // (é pequeno, ~2MB) como blob local, assim o carregamento não depende de
+  // rede nem de comportamento de streaming específico do navegador.
   React.useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -74,20 +74,33 @@ export function ScrollVideoBanner({
 
     video.muted = true;
 
-    const updateFrame = () => {
+    const targetTime = () => {
       const duration = durationRef.current;
-      if (!duration) return;
+      if (!duration) return null;
       const rect = wrapper.getBoundingClientRect();
       const vh = window.visualViewport?.height ?? window.innerHeight;
       const scrollable = rect.height - vh;
-      if (scrollable <= 0) return;
+      if (scrollable <= 0) return null;
       const progress = Math.min(1, Math.max(0, -rect.top / scrollable));
-      video.currentTime = progress * duration;
+      return progress * duration;
+    };
+
+    let rafId: number;
+    const tick = () => {
+      const time = targetTime();
+      // Mantém o vídeo tocando (mudo, baixinho no fundo) só pra garantir que
+      // o Safari continue decodificando frames de verdade; a gente sempre
+      // força o tempo de volta pra posição do scroll, então visualmente ele
+      // não "anda" sozinho.
+      if (time !== null && Math.abs(video.currentTime - time) > 0.03) {
+        video.currentTime = time;
+      }
+      rafId = requestAnimationFrame(tick);
     };
 
     const handleLoadedMetadata = () => {
       durationRef.current = video.duration || 0;
-      updateFrame();
+      video.play().catch(() => {});
     };
     video.addEventListener("loadedmetadata", handleLoadedMetadata);
     // Os metadados às vezes já carregam antes desse efeito rodar (preload
@@ -96,22 +109,11 @@ export function ScrollVideoBanner({
       handleLoadedMetadata();
     }
 
-    let ticking = false;
-    const onScroll = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        updateFrame();
-        ticking = false;
-      });
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll, { passive: true });
+    rafId = requestAnimationFrame(tick);
 
     return () => {
       video.removeEventListener("loadedmetadata", handleLoadedMetadata);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
+      cancelAnimationFrame(rafId);
     };
   }, []);
 
@@ -125,6 +127,7 @@ export function ScrollVideoBanner({
           ref={videoRef}
           poster={posterUrl}
           muted
+          loop
           playsInline
           preload="auto"
           disablePictureInPicture
