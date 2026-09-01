@@ -18,11 +18,20 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { storeConfig } from "@/config/store";
+import { cn } from "@/lib/utils";
 import type { Category } from "@/types/database.types";
 
 export function Header({ categories }: { categories: Category[] }) {
   const router = useRouter();
   const topLevel = categories.filter((c) => !c.parent_id);
+  const [scrolled, setScrolled] = React.useState(false);
+
+  React.useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   function handleSearch(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -34,7 +43,12 @@ export function Header({ categories }: { categories: Category[] }) {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
-      <div className="relative mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
+      <div
+        className={cn(
+          "relative mx-auto flex max-w-7xl items-center gap-4 px-4 transition-[padding] duration-300",
+          scrolled ? "py-3" : "py-5 sm:py-7"
+        )}
+      >
         <div className="flex items-center gap-4">
           <Sheet>
             <SheetTrigger asChild>
@@ -78,7 +92,10 @@ export function Header({ categories }: { categories: Category[] }) {
             width={640}
             height={638}
             priority
-            className="h-14 w-auto sm:h-16"
+            className={cn(
+              "w-auto transition-[height] duration-300",
+              scrolled ? "h-14 sm:h-16" : "h-20 sm:h-24"
+            )}
           />
         </Link>
 
