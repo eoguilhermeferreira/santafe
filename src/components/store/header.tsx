@@ -27,7 +27,15 @@ export function Header({ categories }: { categories: Category[] }) {
   const [scrolled, setScrolled] = React.useState(false);
 
   React.useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
+    // Uma única marca de 24px faz a logo "piscar" entre os dois tamanhos:
+    // ao encolher, o header fica mais baixo e a página some um pouco pra
+    // cima, o que pode oscilar o scroll bem em cima da marca e disparar o
+    // encolher/crescer várias vezes seguidas. Com duas marcas diferentes
+    // pra entrar e sair do estado "rolado" sobra uma faixa sem troca no
+    // meio, então isso não fica se repetindo.
+    const onScroll = () => {
+      setScrolled((prev) => (prev ? window.scrollY > 8 : window.scrollY > 40));
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
