@@ -58,25 +58,6 @@ export function ScrollVideoBanner({
 
     const handleLoadedMetadata = () => {
       durationRef.current = video.duration || 0;
-      // Alguns navegadores (principalmente no iOS) só decodificam o primeiro
-      // frame depois de um play() de verdade — pausar cedo demais (ex: no
-      // .then() da promise) pode acontecer antes de qualquer frame ser
-      // pintado na tela, deixando o vídeo em branco. Espera o evento
-      // "playing" (decodificação já rodando) antes de pausar.
-      const warmUp = () => {
-        const onPlaying = () => {
-          video.removeEventListener("playing", onPlaying);
-          requestAnimationFrame(() => {
-            video.pause();
-            updateFrame();
-          });
-        };
-        video.addEventListener("playing", onPlaying);
-        video.play().catch(() => {
-          video.removeEventListener("playing", onPlaying);
-        });
-      };
-      warmUp();
       updateFrame();
     };
     video.addEventListener("loadedmetadata", handleLoadedMetadata);
