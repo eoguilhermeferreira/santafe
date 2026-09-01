@@ -129,14 +129,29 @@ export async function getRelatedProducts(
   excludeProductId: string,
   limit = 4
 ): Promise<ProductWithRelations[]> {
-  if (!categoryId) return [];
   const supabase = await createClient();
+
+  if (categoryId) {
+    const { data, error } = await supabase
+      .from("products")
+      .select(PRODUCT_SELECT)
+      .eq("category_id", categoryId)
+      .eq("is_active", true)
+      .neq("id", excludeProductId)
+      .limit(limit);
+
+    if (error) throw error;
+    if (data.length > 0) return (data as unknown as ProductWithRelations[]).map(sortImages);
+  }
+
+  // Sem outros produtos na mesma categoria (ex: catálogo ainda pequeno) —
+  // mostra outros produtos ativos da loja em vez de esconder a seção.
   const { data, error } = await supabase
     .from("products")
     .select(PRODUCT_SELECT)
-    .eq("category_id", categoryId)
     .eq("is_active", true)
     .neq("id", excludeProductId)
+    .order("created_at", { ascending: false })
     .limit(limit);
 
   if (error) throw error;
