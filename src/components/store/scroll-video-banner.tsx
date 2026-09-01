@@ -38,6 +38,35 @@ export function ScrollVideoBanner({
     };
   }, []);
 
+  // O Safari do iPhone não baixa os bytes do vídeo (só os metadados) até
+  // um play() de verdade acontecer, mesmo com preload="auto" — então
+  // buscar um frame no meio do vídeo via currentTime, sem nunca ter
+  // dado play(), pode não ter dado nem carregado, e aparece preto. Baixa
+  // o arquivo inteiro (é pequeno, ~2MB) como blob e usa isso como fonte:
+  // aí o seek não depende mais de rede nenhuma.
+  React.useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    let cancelled = false;
+    let objectUrl: string | null = null;
+
+    fetch(videoUrl)
+      .then((res) => res.blob())
+      .then((blob) => {
+        if (cancelled) return;
+        objectUrl = URL.createObjectURL(blob);
+        video.src = objectUrl;
+      })
+      .catch(() => {
+        if (!cancelled) video.src = videoUrl;
+      });
+
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [videoUrl]);
+
   React.useEffect(() => {
     const wrapper = wrapperRef.current;
     const video = videoRef.current;
@@ -94,7 +123,6 @@ export function ScrollVideoBanner({
       >
         <video
           ref={videoRef}
-          src={videoUrl}
           poster={posterUrl}
           muted
           playsInline
