@@ -48,7 +48,6 @@ export function ProductList({ products }: { products: ProductWithRelations[] }) 
           <TableRow>
             <TableHead />
             <TableHead>Produto</TableHead>
-            <TableHead>Código</TableHead>
             <TableHead>Categoria</TableHead>
             <TableHead>Preço</TableHead>
             <TableHead>Estoque</TableHead>
@@ -67,7 +66,6 @@ export function ProductList({ products }: { products: ProductWithRelations[] }) 
                 </div>
               </TableCell>
               <TableCell className="max-w-56 truncate font-medium">{product.name}</TableCell>
-              <TableCell className="text-muted-foreground">{product.code}</TableCell>
               <TableCell className="text-muted-foreground">{product.categories?.name ?? "—"}</TableCell>
               <TableCell>{formatPrice(product.promo_price ?? product.price)}</TableCell>
               <TableCell>{product.stock}</TableCell>
