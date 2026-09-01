@@ -210,6 +210,9 @@ export function ProductForm({
 
       <Card className="space-y-4 p-6">
         <h2 className="font-display text-lg font-semibold">Imagens</h2>
+        <p className="text-sm text-muted-foreground">
+          Adicione quantas fotos quiser — a primeira é a capa do produto.
+        </p>
         <div className="flex flex-wrap gap-3">
           {images.map((url, index) => (
             <div key={url} className="relative size-24 overflow-hidden rounded-md border border-border">
