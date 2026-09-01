@@ -61,8 +61,6 @@ export default async function HomePage() {
           eyebrow="Edição especial"
           title="Diário Bíblico 2027 já disponível"
           description="Reflexões diárias para acompanhar sua caminhada de fé ao longo do ano."
-          buttonLabel="Conhecer o diário"
-          href="/categoria/diario-biblico-2027"
         />
       </Reveal>
 

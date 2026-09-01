@@ -70,12 +70,13 @@ export function PromoSquareBanner({
   description,
   buttonLabel,
   href,
-}: PromoBannerBaseProps) {
-  return (
-    <Link
-      href={href}
-      className="group relative block aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border sm:aspect-[16/9] lg:aspect-[21/9]"
-    >
+}: Partial<Pick<PromoBannerBaseProps, "buttonLabel" | "href">> &
+  Omit<PromoBannerBaseProps, "buttonLabel" | "href">) {
+  const className =
+    "group relative block aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border sm:aspect-[16/10] lg:aspect-[16/9]";
+
+  const content = (
+    <>
       <Image
         src={imageUrl}
         alt=""
@@ -96,11 +97,23 @@ export function PromoSquareBanner({
         {description && (
           <p className="max-w-sm text-sm text-white/85 sm:text-base">{description}</p>
         )}
-        <span className="mt-1 flex items-center gap-1 rounded-md bg-white px-4 py-2 text-sm font-semibold text-foreground transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
-          {buttonLabel}
-          <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-        </span>
+        {href && buttonLabel && (
+          <span className="mt-1 flex items-center gap-1 rounded-md bg-white px-4 py-2 text-sm font-semibold text-foreground transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
+            {buttonLabel}
+            <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+          </span>
+        )}
       </div>
+    </>
+  );
+
+  if (!href) {
+    return <div className={className}>{content}</div>;
+  }
+
+  return (
+    <Link href={href} className={className}>
+      {content}
     </Link>
   );
 }
