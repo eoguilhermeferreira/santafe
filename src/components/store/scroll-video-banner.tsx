@@ -3,9 +3,11 @@
 import * as React from "react";
 
 /**
- * Banner de vídeo cujo "play" é controlado pela rolagem da página: em vez
- * de tocar sozinho, o vídeo avança conforme a seção passa pela tela. Sem
- * áudio e sem controles — é só uma imagem em movimento.
+ * Seção de vídeo em tela cheia, largura total (fora do container da home),
+ * que fica "grudada" na tela enquanto a pessoa rola por cima dela — como um
+ * buraco que se abre no meio do site. O vídeo não toca sozinho: o avanço dele
+ * é controlado pela rolagem, só começa quando a seção chega no topo e some
+ * de novo (com degradê) quando ela termina.
  */
 export function ScrollVideoBanner({
   videoUrl,
@@ -14,25 +16,24 @@ export function ScrollVideoBanner({
   videoUrl: string;
   posterUrl?: string;
 }) {
-  const sectionRef = React.useRef<HTMLDivElement>(null);
+  const wrapperRef = React.useRef<HTMLDivElement>(null);
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const durationRef = React.useRef(0);
 
   React.useEffect(() => {
+    const wrapper = wrapperRef.current;
     const video = videoRef.current;
-    const section = sectionRef.current;
-    if (!video || !section) return;
+    if (!wrapper || !video) return;
 
     video.muted = true;
 
     const updateFrame = () => {
       const duration = durationRef.current;
       if (!duration) return;
-      const rect = section.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      const total = rect.height + viewportHeight;
-      const scrolled = viewportHeight - rect.top;
-      const progress = Math.min(1, Math.max(0, scrolled / total));
+      const rect = wrapper.getBoundingClientRect();
+      const scrollable = rect.height - window.innerHeight;
+      if (scrollable <= 0) return;
+      const progress = Math.min(1, Math.max(0, -rect.top / scrollable));
       video.currentTime = progress * duration;
     };
 
@@ -68,22 +69,22 @@ export function ScrollVideoBanner({
   }, []);
 
   return (
-    <div
-      ref={sectionRef}
-      className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border bg-muted sm:aspect-[16/10] lg:aspect-[16/9]"
-    >
-      <video
-        ref={videoRef}
-        src={videoUrl}
-        poster={posterUrl}
-        muted
-        playsInline
-        preload="auto"
-        disablePictureInPicture
-        disableRemotePlayback
-        className="absolute inset-0 size-full object-cover"
-      />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-background to-transparent sm:h-24" />
+    <div ref={wrapperRef} className="relative h-[250vh] w-full">
+      <div className="sticky top-0 h-screen w-full overflow-hidden">
+        <video
+          ref={videoRef}
+          src={videoUrl}
+          poster={posterUrl}
+          muted
+          playsInline
+          preload="auto"
+          disablePictureInPicture
+          disableRemotePlayback
+          className="absolute inset-0 size-full object-cover"
+        />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-background to-transparent sm:h-40" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background to-transparent sm:h-40" />
+      </div>
     </div>
   );
 }
