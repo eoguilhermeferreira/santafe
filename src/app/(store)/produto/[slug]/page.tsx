@@ -62,7 +62,6 @@ export default async function ProdutoPage({
             </span>
           )}
           <h1 className="font-display text-2xl font-semibold sm:text-3xl">{product.name}</h1>
-          <span className="text-xs text-muted-foreground">Código: {product.code}</span>
 
           <div className="flex items-center gap-3">
             {product.promo_price ? (
