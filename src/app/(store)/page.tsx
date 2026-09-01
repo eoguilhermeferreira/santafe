@@ -1,6 +1,6 @@
 import { BannerCarousel } from "@/components/store/banner-carousel";
 import { CategoryGrid } from "@/components/store/category-grid";
-import { PromoBanner, PromoSquareBanner } from "@/components/store/promo-banner";
+import { PromoBanner } from "@/components/store/promo-banner";
 import { ProductSection } from "@/components/store/product-section";
 import { Reveal } from "@/components/store/reveal";
 import { storeConfig } from "@/config/store";
@@ -55,14 +55,11 @@ export default async function HomePage() {
         <ProductSection title="Novidades" href="/produtos" products={novidades} />
       </Reveal>
 
-      <Reveal>
-        <PromoSquareBanner
-          imageUrl="https://images.unsplash.com/photo-1626464017335-3bf3d5385036?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
-          eyebrow="Edição especial"
-          title="Diário Bíblico 2027 já disponível"
-          description="Reflexões diárias para acompanhar sua caminhada de fé ao longo do ano."
-        />
-      </Reveal>
+      {/*
+        Banner de vídeo com scroll ainda aguardando o arquivo final do
+        santo — ScrollVideoBanner (src/components/store/scroll-video-banner.tsx)
+        já está pronto, é só colocar o vídeo em /public/videos e reativar aqui.
+      */}
 
       <Reveal>
         <ProductSection title="Ofertas" href="/produtos" products={ofertas} />
