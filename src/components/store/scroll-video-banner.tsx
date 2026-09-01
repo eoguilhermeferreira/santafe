@@ -8,6 +8,10 @@ import * as React from "react";
  * buraco que se abre no meio do site. O vídeo não toca sozinho: o avanço dele
  * é controlado pela rolagem, só começa quando a seção chega no topo e some
  * de novo (com degradê) quando ela termina.
+ *
+ * A altura da área presa é calculada em pixels via JS (não em vh/dvh) —
+ * unidades de viewport têm suporte inconsistente entre navegadores mobile,
+ * e um valor errado zera a altura da seção inteira, sumindo com o vídeo.
  */
 export function ScrollVideoBanner({
   videoUrl,
@@ -19,6 +23,20 @@ export function ScrollVideoBanner({
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const durationRef = React.useRef(0);
+  const [viewportPx, setViewportPx] = React.useState<number | null>(null);
+
+  React.useEffect(() => {
+    const updateViewport = () => {
+      setViewportPx(window.visualViewport?.height ?? window.innerHeight);
+    };
+    updateViewport();
+    window.addEventListener("resize", updateViewport);
+    window.visualViewport?.addEventListener("resize", updateViewport);
+    return () => {
+      window.removeEventListener("resize", updateViewport);
+      window.visualViewport?.removeEventListener("resize", updateViewport);
+    };
+  }, []);
 
   React.useEffect(() => {
     const wrapper = wrapperRef.current;
@@ -27,13 +45,12 @@ export function ScrollVideoBanner({
 
     video.muted = true;
 
-    const viewportHeight = () => window.visualViewport?.height ?? window.innerHeight;
-
     const updateFrame = () => {
       const duration = durationRef.current;
       if (!duration) return;
       const rect = wrapper.getBoundingClientRect();
-      const scrollable = rect.height - viewportHeight();
+      const vh = window.visualViewport?.height ?? window.innerHeight;
+      const scrollable = rect.height - vh;
       if (scrollable <= 0) return;
       const progress = Math.min(1, Math.max(0, -rect.top / scrollable));
       video.currentTime = progress * duration;
@@ -90,7 +107,10 @@ export function ScrollVideoBanner({
 
   return (
     <div ref={wrapperRef} className="relative h-[250vh] w-full">
-      <div className="sticky top-0 h-dvh w-full overflow-hidden">
+      <div
+        className="sticky top-0 h-screen w-full overflow-hidden bg-neutral-950"
+        style={viewportPx ? { height: viewportPx } : undefined}
+      >
         <video
           ref={videoRef}
           src={videoUrl}
@@ -100,7 +120,7 @@ export function ScrollVideoBanner({
           preload="auto"
           disablePictureInPicture
           disableRemotePlayback
-          className="absolute inset-0 size-full object-cover"
+          className="absolute inset-0 size-full object-contain"
         />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-background/80 to-transparent sm:h-16" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-background/80 to-transparent sm:h-16" />
