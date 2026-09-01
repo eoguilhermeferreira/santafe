@@ -81,23 +81,21 @@ export function Header({ categories }: { categories: Category[] }) {
           </Sheet>
         </div>
 
-        <Link
-          href="/"
-          aria-label={storeConfig.name}
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-        >
-          <Image
-            src="/logo-santa-fe.png"
-            alt={storeConfig.name}
-            width={640}
-            height={638}
-            priority
-            className={cn(
-              "w-auto transition-[height] duration-300",
-              scrolled ? "h-14 sm:h-16" : "h-20 sm:h-24"
-            )}
-          />
-        </Link>
+        <div className="absolute inset-y-0 left-1/2 flex -translate-x-1/2 items-center">
+          <Link href="/" aria-label={storeConfig.name}>
+            <Image
+              src="/logo-santa-fe.png"
+              alt={storeConfig.name}
+              width={640}
+              height={638}
+              priority
+              className={cn(
+                "w-auto transition-[height] duration-300",
+                scrolled ? "h-14 sm:h-16" : "h-20 sm:h-24"
+              )}
+            />
+          </Link>
+        </div>
 
         <div className="ml-auto flex items-center gap-2">
           <form onSubmit={handleSearch} className="hidden md:block">
