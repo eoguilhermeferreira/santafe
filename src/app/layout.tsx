@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Poppins } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { CartProvider } from "@/components/cart/cart-provider";
@@ -25,6 +25,10 @@ export const metadata: Metadata = {
   },
   description: storeConfig.description,
   metadataBase: storeConfig.siteUrl ? new URL(storeConfig.siteUrl) : undefined,
+};
+
+export const viewport: Viewport = {
+  themeColor: "#faf9f5",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
