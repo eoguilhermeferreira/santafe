@@ -6,40 +6,45 @@
 :root {
   --radius: 0.5rem;
 
-  /* Paleta neutra provisória — logo, cores e fonte oficiais da Santa Fé
-     ainda pendentes com a cliente. Trocar os tokens abaixo quando
-     chegarem (ver README, seção "Identidade visual"). */
+  /* Paleta oficial da Santa Fé (Manual da marca): dourado #b58b4d como cor
+     principal, cinza escuro #3e3d3d como secundária. */
   --background: #faf9f5;
-  --foreground: #191914;
+  --foreground: #3e3d3d;
   --card: #ffffff;
-  --card-foreground: #191914;
+  --card-foreground: #3e3d3d;
   --popover: #ffffff;
-  --popover-foreground: #191914;
+  --popover-foreground: #3e3d3d;
 
-  --primary: #141414;
+  --primary: #3e3d3d;
   --primary-foreground: #f7f5ef;
 
   --secondary: #efece4;
-  --secondary-foreground: #1f1f1c;
+  --secondary-foreground: #3e3d3d;
 
   --muted: #f1efe7;
   --muted-foreground: #6b6a5f;
 
-  --accent: #c9a15c;
-  --accent-foreground: #201804;
+  --accent: #b58b4d;
+  --accent-foreground: #211a0d;
 
   --destructive: #b3401f;
   --destructive-foreground: #fef6f2;
 
   --border: #e5e2d6;
   --input: #e5e2d6;
-  --ring: #141414;
+  --ring: #3e3d3d;
 
-  --chart-1: #141414;
-  --chart-2: #c9a15c;
-  --chart-3: #3f3f3f;
-  --chart-4: #9c7a3c;
-  --chart-5: #6b6b6b;
+  --chart-1: #3e3d3d;
+  --chart-2: #b58b4d;
+  --chart-3: #998041;
+  --chart-4: #6b6a5f;
+  --chart-5: #c7c7c8;
+
+  /* Degradês do manual da marca, disponíveis como utilitários
+     (bg-gradient-brand / bg-gradient-brand-bg) pra quem quiser usar em
+     algum destaque específico — não aplicados em massa no site. */
+  --gradient-brand: linear-gradient(135deg, #b58b4d, #998041);
+  --gradient-brand-bg: linear-gradient(135deg, #ffffff, #c7c7c8);
 }
 
 .dark {
@@ -117,5 +122,19 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .bg-gradient-brand {
+    background-image: var(--gradient-brand);
+  }
+  .bg-gradient-brand-bg {
+    background-image: var(--gradient-brand-bg);
+  }
+  .text-gradient-brand {
+    background-image: var(--gradient-brand);
+    background-clip: text;
+    color: transparent;
   }
 }
