@@ -55,7 +55,7 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
   );
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-border bg-muted sm:rounded-2xl">
+    <div className="relative overflow-hidden bg-muted">
       {banner.button_link ? (
         <Link
           href={banner.button_link}
