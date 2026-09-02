@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -32,8 +33,14 @@ export function AdminSidebar() {
   return (
     <aside className="sticky top-0 flex h-screen w-60 shrink-0 flex-col overflow-y-auto border-r border-border bg-card">
       <div className="border-b border-border p-4">
-        <span className="font-display text-lg font-semibold text-accent">{storeConfig.name}</span>
-        <p className="text-xs text-muted-foreground">Painel administrativo</p>
+        <Image
+          src="/logo-santa-fe.png"
+          alt={storeConfig.name}
+          width={700}
+          height={680}
+          className="h-11 w-auto"
+        />
+        <p className="mt-1 text-xs text-muted-foreground">Painel administrativo</p>
       </div>
 
       <nav className="flex-1 space-y-1 p-3">
