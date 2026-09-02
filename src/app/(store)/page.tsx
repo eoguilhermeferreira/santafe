@@ -24,7 +24,7 @@ export default async function HomePage() {
     ]);
 
   return (
-    <div className="flex flex-col gap-14 py-6 sm:py-8">
+    <div className="flex flex-col gap-14 pb-6 sm:pb-8">
       <div className="relative left-1/2 w-screen -translate-x-1/2">
         <BannerCarousel banners={banners} />
       </div>
