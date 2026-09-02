@@ -92,6 +92,11 @@ export function Header({ categories }: { categories: Category[] }) {
               </SheetHeader>
               <nav className="flex flex-col gap-1">
                 <SheetClose asChild>
+                  <Link href="/" className="rounded-md px-2 py-2 text-sm font-medium hover:bg-secondary">
+                    Início
+                  </Link>
+                </SheetClose>
+                <SheetClose asChild>
                   <Link href="/produtos" className="rounded-md px-2 py-2 text-sm font-medium hover:bg-secondary">
                     Todos os produtos
                   </Link>

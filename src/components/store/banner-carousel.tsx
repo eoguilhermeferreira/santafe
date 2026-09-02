@@ -59,12 +59,12 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
       {banner.button_link ? (
         <Link
           href={banner.button_link}
-          className="relative block aspect-[4/3] w-full sm:aspect-[16/9] lg:aspect-[21/9]"
+          className="relative block aspect-[1/1] w-full sm:aspect-[4/3] lg:aspect-[16/9]"
         >
           {bannerContent}
         </Link>
       ) : (
-        <div className="relative block aspect-[4/3] w-full sm:aspect-[16/9] lg:aspect-[21/9]">
+        <div className="relative block aspect-[1/1] w-full sm:aspect-[4/3] lg:aspect-[16/9]">
           {bannerContent}
         </div>
       )}
