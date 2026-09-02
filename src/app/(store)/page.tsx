@@ -25,11 +25,11 @@ export default async function HomePage() {
 
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-14 px-4 py-6 sm:py-8">
+      <BannerCarousel banners={banners} />
+
       <Reveal>
         <CategoryGrid categories={categories} />
       </Reveal>
-
-      <BannerCarousel banners={banners} />
 
       <Reveal>
         <ProductSection title="Mais vendidos" href="/produtos" products={maisVendidos} />
