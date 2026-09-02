@@ -14,14 +14,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { storeConfig } from "@/config/store";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/checkout-schema";
-import { formatCep, formatPrice, onlyDigits, slugify } from "@/lib/format";
+import { formatCep, formatPrice, onlyDigits } from "@/lib/format";
 import { calculateShipping } from "@/lib/shipping";
 import { fetchAddressByCep } from "@/lib/viacep";
 import type { PaymentMethod } from "@/types/database.types";
-
-const { deliveryCity, deliveryState } = storeConfig.shipping;
 
 const PAYMENT_OPTIONS: { value: PaymentMethod; label: string }[] = [
   { value: "pix", label: "Pix" },
@@ -77,13 +74,6 @@ export function CheckoutForm() {
         city: address.city || current.city,
         state: address.state || current.state,
       }));
-
-      if (
-        address.city &&
-        (slugify(address.city) !== slugify(deliveryCity) || address.state !== deliveryState)
-      ) {
-        toast.error(`No momento só entregamos em ${deliveryCity}/${deliveryState}`);
-      }
     }
   }
 

@@ -1,8 +1,8 @@
 import { storeConfig } from "@/config/store";
 
 /**
- * Frete simplificado (sem integração com transportadora): valor fixo,
- * já que a entrega é restrita a Avaré/SP.
+ * Frete simplificado (sem integração com transportadora ainda): valor
+ * fixo pra qualquer lugar do Brasil.
  */
 export function calculateShipping(): {
   cost: number;

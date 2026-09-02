@@ -24,14 +24,11 @@ export const storeConfig = {
   },
 
   /**
-   * Frete simplificado: valor fixo, sem gratuidade por faixa de valor.
-   *
-   * Entrega restrita à cidade da loja por enquanto — `deliveryCity`/
-   * `deliveryState` são checados no schema de checkout (client e server).
+   * Frete simplificado: valor fixo nacional, sem gratuidade por faixa de
+   * valor. Entrega pra todo o Brasil. Provisório até entrar a integração
+   * com o Melhor Envio (cotação real por CEP/peso).
    */
   shipping: {
     flatRateCents: 1000,
-    deliveryCity: "Avaré",
-    deliveryState: "SP",
   },
 } as const;
