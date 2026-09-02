@@ -1,7 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { useActionState } from "react";
-import { Loader2, Lock } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 import { signIn } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
@@ -17,13 +18,17 @@ export default function AdminLoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-secondary/40 px-4">
       <Card className="w-full max-w-sm space-y-6 p-8">
         <div className="flex flex-col items-center gap-2 text-center">
-          <span className="flex size-11 items-center justify-center rounded-full bg-accent/10 text-accent">
-            <Lock className="size-5" />
-          </span>
-          <h1 className="font-display text-xl font-semibold">
-            <span className="text-accent">{storeConfig.name}</span> · Admin
-          </h1>
-          <p className="text-sm text-muted-foreground">Entre com sua conta de administrador.</p>
+          <Image
+            src="/logo-santa-fe.png"
+            alt={storeConfig.name}
+            width={700}
+            height={680}
+            priority
+            className="h-16 w-auto"
+          />
+          <p className="text-sm text-muted-foreground">
+            Painel administrativo · entre com sua conta.
+          </p>
         </div>
 
         <form action={formAction} className="space-y-4">
