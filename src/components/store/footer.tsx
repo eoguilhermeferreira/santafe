@@ -12,16 +12,16 @@ export function Footer() {
   const hasSocial = Boolean(instagram || tiktok || facebook);
 
   return (
-    <footer className="mt-16 bg-black text-white">
+    <footer className="mt-16 bg-primary text-primary-foreground">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <h2 className="font-display text-lg font-semibold text-accent">{storeConfig.name}</h2>
-          <p className="mt-2 text-sm text-white/60">{storeConfig.description}</p>
+          <p className="mt-2 text-sm text-primary-foreground/60">{storeConfig.description}</p>
         </div>
 
         <div>
           <h3 className="text-sm font-semibold">Institucional</h3>
-          <nav className="mt-2 flex flex-col gap-1.5 text-sm text-white/60">
+          <nav className="mt-2 flex flex-col gap-1.5 text-sm text-primary-foreground/60">
             <Link href="/produtos" className="hover:text-accent">Todos os produtos</Link>
             <Link href="/carrinho" className="hover:text-accent">Meu carrinho</Link>
           </nav>
@@ -29,7 +29,7 @@ export function Footer() {
 
         <div>
           <h3 className="text-sm font-semibold">Atendimento</h3>
-          <div className="mt-2 flex flex-col gap-2 text-sm text-white/60">
+          <div className="mt-2 flex flex-col gap-2 text-sm text-primary-foreground/60">
             <a
               href={`https://wa.me/${storeConfig.contact.whatsapp}`}
               target="_blank"
@@ -53,7 +53,7 @@ export function Footer() {
         {hasSocial && (
           <div>
             <h3 className="text-sm font-semibold">Redes sociais</h3>
-            <div className="mt-2 flex flex-col gap-2 text-sm text-white/60">
+            <div className="mt-2 flex flex-col gap-2 text-sm text-primary-foreground/60">
               {instagram && (
                 <a
                   href={instagram}
@@ -89,7 +89,7 @@ export function Footer() {
         )}
       </div>
 
-      <div className="border-t border-white/10 px-4 py-4 text-center text-xs text-white/50">
+      <div className="border-t border-primary-foreground/10 px-4 py-4 text-center text-xs text-primary-foreground/50">
         <p>
           © {new Date().getFullYear()}, Santa Fé Artigos Católicos. É vedada qualquer reprodução
           total ou parcial, nos termos da Lei nº 9.610/98. Todos os direitos reservados.
@@ -101,7 +101,7 @@ export function Footer() {
             href="https://instagram.com/agencynodex"
             target="_blank"
             rel="noreferrer"
-            className="font-medium text-white/70 hover:text-accent"
+            className="font-medium text-primary-foreground/70 hover:text-accent"
           >
             Agência Nodex
           </a>
