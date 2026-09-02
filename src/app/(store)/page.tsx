@@ -25,7 +25,7 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col gap-14 pb-6 sm:pb-8">
-      <div className="relative left-1/2 w-screen -translate-x-1/2">
+      <div className="relative left-1/2 -mt-[81px] w-screen -translate-x-1/2 sm:-mt-[97px]">
         <BannerCarousel banners={banners} />
       </div>
 

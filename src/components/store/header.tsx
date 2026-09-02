@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import * as React from "react";
 import { Menu, Search } from "lucide-react";
 
@@ -23,8 +23,14 @@ import type { Category } from "@/types/database.types";
 
 export function Header({ categories }: { categories: Category[] }) {
   const router = useRouter();
+  const pathname = usePathname();
   const topLevel = categories.filter((c) => !c.parent_id);
   const [scrolled, setScrolled] = React.useState(false);
+
+  // Na home, enquanto não rolou, o header flutua transparente por cima do
+  // banner (que preenche até o topo da página) em vez de empurrá-lo pra
+  // baixo. Nas outras páginas (e assim que rola) ele volta a ser sólido.
+  const isHomeOverlay = pathname === "/" && !scrolled;
 
   React.useEffect(() => {
     // Uma única marca de 24px faz a logo "piscar" entre os dois tamanhos:
@@ -50,11 +56,19 @@ export function Header({ categories }: { categories: Category[] }) {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
+    <header
+      className={cn(
+        "sticky top-0 z-40 transition-colors duration-300",
+        isHomeOverlay
+          ? "bg-gradient-to-b from-black/45 via-black/10 to-transparent"
+          : "border-b border-border bg-background/95 backdrop-blur"
+      )}
+    >
       <div
         className={cn(
           "relative mx-auto flex max-w-7xl items-center gap-4 px-4 transition-[padding] duration-300",
-          scrolled ? "py-3" : "py-5 sm:py-7"
+          scrolled ? "py-3" : "py-5 sm:py-7",
+          isHomeOverlay && "text-white"
         )}
       >
         <div className="flex items-center gap-4">
