@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 
+import { BackButton } from "@/components/store/back-button";
 import { ProductCard } from "@/components/store/product-card";
 import { getCategoryBySlug, getProducts } from "@/lib/queries";
 
@@ -26,7 +27,8 @@ export default async function CategoriaPage({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
-      <div className="mb-6 flex flex-col gap-3">
+      <BackButton />
+      <div className="mb-6 mt-2 flex flex-col gap-3">
         <h1 className="font-display text-2xl font-semibold sm:text-3xl">{category.name}</h1>
         <p className="text-sm text-muted-foreground">{total} produtos</p>
       </div>

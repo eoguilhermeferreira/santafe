@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 
 import { useCart } from "@/components/cart/cart-provider";
+import { BackButton } from "@/components/store/back-button";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { formatPrice } from "@/lib/format";
@@ -16,20 +17,24 @@ export default function CarrinhoPage() {
 
   if (isHydrated && items.length === 0) {
     return (
-      <div className="mx-auto flex max-w-xl flex-col items-center gap-4 px-4 py-24 text-center">
-        <ShoppingBag className="size-12 text-muted-foreground" />
-        <h1 className="font-display text-2xl font-semibold">Seu carrinho está vazio</h1>
-        <p className="text-muted-foreground">Explore nosso catálogo e encontre algo especial.</p>
-        <Button asChild size="lg">
-          <Link href="/produtos">Ver produtos</Link>
-        </Button>
+      <div className="mx-auto max-w-xl px-4 pt-8">
+        <BackButton />
+        <div className="flex flex-col items-center gap-4 py-16 text-center">
+          <ShoppingBag className="size-12 text-muted-foreground" />
+          <h1 className="font-display text-2xl font-semibold">Seu carrinho está vazio</h1>
+          <p className="text-muted-foreground">Explore nosso catálogo e encontre algo especial.</p>
+          <Button asChild size="lg">
+            <Link href="/produtos">Ver produtos</Link>
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
-      <h1 className="mb-6 font-display text-2xl font-semibold sm:text-3xl">Seu carrinho</h1>
+      <BackButton />
+      <h1 className="mb-6 mt-2 font-display text-2xl font-semibold sm:text-3xl">Seu carrinho</h1>
 
       <div className="grid gap-8 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">

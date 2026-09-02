@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { BackButton } from "@/components/store/back-button";
 import { ProductCard } from "@/components/store/product-card";
 import { Button } from "@/components/ui/button";
 import { getProducts } from "@/lib/queries";
@@ -28,7 +29,8 @@ export default async function ProdutosPage({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
-      <div className="mb-6 flex flex-col gap-3">
+      <BackButton />
+      <div className="mb-6 mt-2 flex flex-col gap-3">
         <h1 className="font-display text-2xl font-semibold sm:text-3xl">
           {busca ? `Resultados para "${busca}"` : "Todos os produtos"}
         </h1>
