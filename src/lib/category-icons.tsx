@@ -1,16 +1,13 @@
 import type * as React from "react";
 
-import {
-  BookOpen,
-  BookMarked,
-  Shirt,
-  HandHeart,
-  Link as LinkIcon,
-  NotebookPen,
-  ShoppingBag,
-} from "lucide-react";
+import { BookOpen, BookMarked, Shirt, NotebookPen, ShoppingBag } from "lucide-react";
 
-import { CrucifixIcon, RosaryIcon, SaintIcon } from "@/components/icons/religious-icons";
+import {
+  CrucifixIcon,
+  RosaryIcon,
+  SaintIcon,
+  ScapularIcon,
+} from "@/components/icons/religious-icons";
 
 type IconComponent = React.ComponentType<{ className?: string }>;
 
@@ -24,9 +21,9 @@ export const CATEGORY_ICONS: Record<string, IconComponent> = {
   crucifixos: CrucifixIcon,
   tercos: RosaryIcon,
   imagens: SaintIcon,
-  escapularios: HandHeart,
+  escapularios: ScapularIcon,
   livros: BookMarked,
-  "tercos-de-pulso": LinkIcon,
+  "tercos-de-pulso": RosaryIcon,
   "diario-biblico-2027": NotebookPen,
 };
 

@@ -59,6 +59,24 @@ export function RosaryIcon({ className }: IconProps) {
   );
 }
 
+export function ScapularIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M7.5 13.5C7.5 8 8.5 4 12 4s4.5 4 4.5 9.5" />
+      <rect x="3.5" y="13.5" width="6" height="7" rx="1" />
+      <rect x="14.5" y="13.5" width="6" height="7" rx="1" />
+    </svg>
+  );
+}
+
 export function SaintIcon({ className }: IconProps) {
   return (
     <svg
