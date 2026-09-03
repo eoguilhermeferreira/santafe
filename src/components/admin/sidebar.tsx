@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Home,
   LayoutDashboard,
   Package,
   Tags,
@@ -44,15 +43,6 @@ export function AdminSidebar() {
       </div>
 
       <nav className="flex-1 space-y-1 p-3">
-        <Link
-          href="/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium text-foreground/80 transition-colors hover:bg-secondary"
-        >
-          <Home className="size-4" />
-          Início
-        </Link>
         {NAV_ITEMS.map((item) => {
           const active = item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href);
           const Icon = item.icon;
