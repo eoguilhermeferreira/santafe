@@ -137,8 +137,20 @@ export function Header({ categories }: { categories: Category[] }) {
         <div className="ml-auto flex items-center gap-2">
           <form onSubmit={handleSearch} className="hidden md:block">
             <div className="relative w-48 lg:w-64">
-              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input name="q" placeholder="Buscar produtos ou código" className="pl-9" />
+              <button
+                type="submit"
+                aria-label="Buscar"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              >
+                <Search className="size-4" />
+              </button>
+              <Input
+                name="q"
+                type="search"
+                enterKeyHint="search"
+                placeholder="Buscar produtos ou código"
+                className="appearance-none pl-9"
+              />
             </div>
           </form>
           <Button
@@ -161,11 +173,19 @@ export function Header({ categories }: { categories: Category[] }) {
           </SheetHeader>
           <form onSubmit={handleSearch} className="pr-10">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <button
+                type="submit"
+                aria-label="Buscar"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              >
+                <Search className="size-4" />
+              </button>
               <Input
                 name="q"
+                type="search"
+                enterKeyHint="search"
                 placeholder="Buscar produtos ou código"
-                className="pl-9"
+                className="appearance-none pl-9"
                 autoFocus
               />
             </div>
