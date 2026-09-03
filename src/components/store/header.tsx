@@ -26,6 +26,7 @@ export function Header({ categories }: { categories: Category[] }) {
   const pathname = usePathname();
   const topLevel = categories.filter((c) => !c.parent_id);
   const [scrolled, setScrolled] = React.useState(false);
+  const [searchOpen, setSearchOpen] = React.useState(false);
 
   // Na home, enquanto não rolou, o header flutua transparente por cima do
   // banner (que preenche até o topo da página) em vez de empurrá-lo pra
@@ -51,6 +52,7 @@ export function Header({ categories }: { categories: Category[] }) {
     event.preventDefault();
     const search = new FormData(event.currentTarget).get("q");
     if (typeof search === "string" && search.trim()) {
+      setSearchOpen(false);
       router.push(`/produtos?busca=${encodeURIComponent(search.trim())}`);
     }
   }
@@ -139,14 +141,37 @@ export function Header({ categories }: { categories: Category[] }) {
               <Input name="q" placeholder="Buscar produtos ou código" className="pl-9" />
             </div>
           </form>
-          <Button asChild variant="ghost" size="icon" className="md:hidden" aria-label="Buscar">
-            <Link href="/produtos">
-              <Search />
-            </Link>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            aria-label="Buscar"
+            onClick={() => setSearchOpen(true)}
+          >
+            <Search />
           </Button>
           <CartSheet />
         </div>
       </div>
+
+      <Sheet open={searchOpen} onOpenChange={setSearchOpen}>
+        <SheetContent side="top" className="md:hidden">
+          <SheetHeader className="sr-only">
+            <SheetTitle>Buscar produtos</SheetTitle>
+          </SheetHeader>
+          <form onSubmit={handleSearch} className="pr-10">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                name="q"
+                placeholder="Buscar produtos ou código"
+                className="pl-9"
+                autoFocus
+              />
+            </div>
+          </form>
+        </SheetContent>
+      </Sheet>
     </header>
   );
 }
