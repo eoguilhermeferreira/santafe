@@ -110,7 +110,10 @@ export async function createOrder(input: unknown): Promise<CreateOrderResult> {
     .select("*, product_variations(*)")
     .in("id", productIds);
 
-  if (productsError) return { error: "Não foi possível carregar os produtos." };
+  if (productsError) {
+    console.error("Erro ao carregar produtos no checkout", productsError);
+    return { error: "Não foi possível carregar os produtos." };
+  }
 
   const orderItems: {
     product_id: string;
