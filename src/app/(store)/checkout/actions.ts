@@ -3,7 +3,7 @@
 import { randomUUID } from "node:crypto";
 
 import { checkoutSchema, checkoutItemSchema } from "@/lib/checkout-schema";
-import { getMelhorEnvioQuote } from "@/lib/melhor-envio";
+import { getMelhorEnvioOptions, type ShippingOption } from "@/lib/melhor-envio";
 import { getPaymentClient, mapMercadoPagoStatus } from "@/lib/mercadopago";
 import { calculateShipping } from "@/lib/shipping";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -13,18 +13,25 @@ import { z } from "zod";
 import type { PaymentStatus } from "@/types/database.types";
 
 /**
- * Cotação de frete pra exibir no checkout enquanto o cliente digita o CEP.
- * Tenta o Melhor Envio (preço real por CEP/peso); sem token configurado ou
- * se a cotação falhar, cai pro frete fixo.
+ * Opções de frete pra exibir no checkout (o cliente escolhe uma) assim que
+ * preenche o CEP. Tenta o Melhor Envio (preço real por CEP/peso, só
+ * Correios/Jadlog/Loggi, até 2 serviços de cada); sem token configurado ou
+ * se a cotação falhar/vier vazia, cai pro frete fixo como única opção.
  */
-export async function estimateShipping(cep: string, weightGrams: number) {
-  const quote = await getMelhorEnvioQuote({ toCep: cep, weightGrams });
-  return quote ?? calculateShipping();
+export async function getShippingOptions(
+  cep: string,
+  weightGrams: number
+): Promise<ShippingOption[]> {
+  const options = await getMelhorEnvioOptions({ toCep: cep, weightGrams });
+  if (options.length > 0) return options;
+  const flat = calculateShipping();
+  return [{ id: "flat", label: flat.label, cost: flat.cost }];
 }
 
 const createOrderInput = z.object({
   customer: checkoutSchema,
   items: z.array(checkoutItemSchema).min(1, "Carrinho vazio"),
+  shippingOptionId: z.string().optional(),
 });
 
 export interface CreateOrderResult {
@@ -93,7 +100,7 @@ export async function createOrder(input: unknown): Promise<CreateOrderResult> {
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Dados inválidos" };
   }
-  const { customer, items } = parsed.data;
+  const { customer, items, shippingOptionId } = parsed.data;
 
   const supabase = createAdminClient();
 
@@ -153,7 +160,9 @@ export async function createOrder(input: unknown): Promise<CreateOrderResult> {
     });
   }
 
-  const shipping = await estimateShipping(customer.cep, totalWeightGrams);
+  const shippingOptions = await getShippingOptions(customer.cep, totalWeightGrams);
+  const shipping =
+    shippingOptions.find((option) => option.id === shippingOptionId) ?? shippingOptions[0];
   const total = subtotal + shipping.cost;
   const customerId = await upsertCustomerFromCheckout(supabase, customer);
 

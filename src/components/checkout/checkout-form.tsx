@@ -9,8 +9,8 @@ import { toast } from "sonner";
 
 import {
   createOrder,
-  estimateShipping,
   getOrderStatus,
+  getShippingOptions,
   type SubmitPaymentResult,
 } from "@/app/(store)/checkout/actions";
 import { useCart } from "@/components/cart/cart-provider";
@@ -24,6 +24,7 @@ import { formatCep, formatPrice, onlyDigits } from "@/lib/format";
 import { calculateShipping } from "@/lib/shipping";
 import { fetchAddressByCep } from "@/lib/viacep";
 import type { PaymentMethod } from "@/types/database.types";
+import type { ShippingOption } from "@/lib/melhor-envio";
 
 const PAYMENT_OPTIONS: { value: PaymentMethod; label: string }[] = [
   { value: "pix", label: "Pix" },
@@ -63,8 +64,15 @@ export function CheckoutForm() {
   );
   const [pixData, setPixData] = React.useState<{ code: string; base64?: string } | null>(null);
 
-  const [shipping, setShipping] = React.useState(calculateShipping());
+  const flatShipping = calculateShipping();
+  const [shippingOptions, setShippingOptions] = React.useState<ShippingOption[]>([
+    { id: "flat", label: flatShipping.label, cost: flatShipping.cost },
+  ]);
+  const [selectedShippingId, setSelectedShippingId] = React.useState("flat");
   const [isShippingLoading, setIsShippingLoading] = React.useState(false);
+
+  const shipping =
+    shippingOptions.find((option) => option.id === selectedShippingId) ?? shippingOptions[0];
 
   function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -86,8 +94,9 @@ export function CheckoutForm() {
 
     if (digits.length === 8) {
       setIsShippingLoading(true);
-      const quote = await estimateShipping(digits, totalWeightGrams);
-      setShipping(quote);
+      const options = await getShippingOptions(digits, totalWeightGrams);
+      setShippingOptions(options);
+      setSelectedShippingId(options[0]?.id ?? "flat");
       setIsShippingLoading(false);
     }
   }
@@ -120,6 +129,7 @@ export function CheckoutForm() {
         quantity: item.quantity,
         variationValue: item.variationValue,
       })),
+      shippingOptionId: selectedShippingId,
     });
     setIsSubmitting(false);
 
@@ -345,22 +355,55 @@ export function CheckoutForm() {
             </li>
           ))}
         </ul>
-        <div className="space-y-1 border-t border-border pt-3 text-sm">
+        <div className="space-y-2 border-t border-border pt-3 text-sm">
           <div className="flex justify-between">
             <span className="text-muted-foreground">Subtotal</span>
             <span>{formatPrice(subtotal)}</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">{shipping.label}</span>
-            {isShippingLoading ? (
-              <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
-            ) : (
-              <span>{formatPrice(shipping.cost)}</span>
-            )}
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Valor final do frete confirmado ao preencher o CEP.
-          </p>
+
+          {isShippingLoading ? (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Loader2 className="size-3.5 animate-spin" /> Calculando frete…
+            </div>
+          ) : shippingOptions.length > 1 ? (
+            <div className="space-y-1.5">
+              <span className="text-xs font-medium text-muted-foreground">
+                Escolha o frete
+              </span>
+              {shippingOptions.map((option) => (
+                <label
+                  key={option.id}
+                  className={`flex cursor-pointer items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm transition-colors ${
+                    selectedShippingId === option.id
+                      ? "border-primary bg-secondary"
+                      : "border-input hover:bg-secondary/50"
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="shippingOption"
+                      checked={selectedShippingId === option.id}
+                      onChange={() => setSelectedShippingId(option.id)}
+                      className="accent-primary"
+                    />
+                    {option.label}
+                  </span>
+                  <span>{formatPrice(option.cost)}</span>
+                </label>
+              ))}
+            </div>
+          ) : (
+            <>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{shipping.label}</span>
+                <span>{formatPrice(shipping.cost)}</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Valor final do frete confirmado ao preencher o CEP.
+              </p>
+            </>
+          )}
         </div>
         <div className="flex justify-between border-t border-border pt-3 font-display text-lg font-semibold">
           <span>Total</span>
