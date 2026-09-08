@@ -22,6 +22,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { HOME_SECTION_LABELS } from "@/lib/product-constants";
 import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
 import type { Category, HomeSection, ProductWithRelations } from "@/types/database.types";
 
 type Variation = { label: string; value: string; stock: number };
@@ -56,14 +57,21 @@ export function ProductForm({
   );
   const [isUploading, setIsUploading] = React.useState(false);
   const [isSaving, setIsSaving] = React.useState(false);
+  const [isDraggingOver, setIsDraggingOver] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   async function handleAddImages(files: FileList) {
+    const imageFiles = Array.from(files).filter((file) => file.type.startsWith("image/"));
+    if (imageFiles.length === 0) {
+      toast.error("Envie arquivos de imagem");
+      return;
+    }
+
     setIsUploading(true);
     try {
       const supabase = createClient();
       const uploaded: string[] = [];
-      for (const file of Array.from(files)) {
+      for (const file of imageFiles) {
         const ext = file.name.split(".").pop();
         const path = `${crypto.randomUUID()}.${ext}`;
         const { error } = await supabase.storage.from("products").upload(path, file);
@@ -78,6 +86,12 @@ export function ProductForm({
     } finally {
       setIsUploading(false);
     }
+  }
+
+  function handleImageDrop(event: React.DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    setIsDraggingOver(false);
+    if (event.dataTransfer.files.length) handleAddImages(event.dataTransfer.files);
   }
 
   function addVariationRow() {
@@ -205,9 +219,21 @@ export function ProductForm({
       <Card className="space-y-4 p-6">
         <h2 className="font-display text-lg font-semibold">Imagens</h2>
         <p className="text-sm text-muted-foreground">
-          Adicione quantas fotos quiser — a primeira é a capa do produto.
+          Adicione quantas fotos quiser — a primeira é a capa do produto. Também
+          dá pra arrastar as imagens direto pra cá.
         </p>
-        <div className="flex flex-wrap gap-3">
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            setIsDraggingOver(true);
+          }}
+          onDragLeave={() => setIsDraggingOver(false)}
+          onDrop={handleImageDrop}
+          className={cn(
+            "flex flex-wrap gap-3 rounded-md border-2 border-dashed p-3 transition-colors",
+            isDraggingOver ? "border-accent bg-accent/10" : "border-transparent"
+          )}
+        >
           {images.map((url, index) => (
             <div key={url} className="relative size-24 overflow-hidden rounded-md border border-border">
               <Image src={url} alt="" fill className="object-cover" />
@@ -227,7 +253,7 @@ export function ProductForm({
             className="flex size-24 flex-col items-center justify-center gap-1 rounded-md border border-dashed border-input text-xs text-muted-foreground hover:bg-secondary"
           >
             {isUploading ? <Loader2 className="size-5 animate-spin" /> : <Upload className="size-5" />}
-            Adicionar
+            {isDraggingOver ? "Solte aqui" : "Adicionar"}
           </button>
           <input
             ref={fileInputRef}
