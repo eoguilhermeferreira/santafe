@@ -1,7 +1,7 @@
 import "server-only";
-import { MercadoPagoConfig, Payment } from "mercadopago";
+import { MercadoPagoConfig, Payment, Preference } from "mercadopago";
 
-import type { PaymentStatus } from "@/types/database.types";
+import type { PaymentMethod, PaymentStatus } from "@/types/database.types";
 
 let client: MercadoPagoConfig | null = null;
 
@@ -16,8 +16,34 @@ function getClient(): MercadoPagoConfig {
   return client;
 }
 
+/** Usado pelo webhook para buscar o pagamento real a partir do id notificado. */
 export function getPaymentClient(): Payment {
   return new Payment(getClient());
+}
+
+/**
+ * Checkout Pro: gera a preferência que leva ao `init_point` (URL da página
+ * de pagamento hospedada pelo Mercado Pago) — ver `createCheckoutPreference`
+ * em app/(store)/checkout/actions.ts.
+ */
+export function getPreferenceClient(): Preference {
+  return new Preference(getClient());
+}
+
+/** Mapeia o tipo de pagamento usado de fato (vindo do webhook) pro nosso enum. */
+export function mapMercadoPagoPaymentType(paymentTypeId: string | undefined): PaymentMethod | null {
+  switch (paymentTypeId) {
+    case "credit_card":
+      return "cartao_credito";
+    case "debit_card":
+      return "cartao_debito";
+    case "ticket":
+      return "boleto";
+    case "bank_transfer":
+      return "pix";
+    default:
+      return null;
+  }
 }
 
 /** Mapeia o status do Mercado Pago para o enum payment_status do banco. */

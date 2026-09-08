@@ -1,16 +1,13 @@
 "use server";
 
-import { randomUUID } from "node:crypto";
-
 import { checkoutSchema, checkoutItemSchema } from "@/lib/checkout-schema";
 import { getMelhorEnvioOptions, type ShippingOption } from "@/lib/melhor-envio";
-import { getPaymentClient, mapMercadoPagoStatus } from "@/lib/mercadopago";
+import { getPreferenceClient } from "@/lib/mercadopago";
 import { calculateShipping } from "@/lib/shipping";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { onlyDigits } from "@/lib/format";
 import { storeConfig } from "@/config/store";
 import { z } from "zod";
-import type { PaymentStatus } from "@/types/database.types";
 
 /**
  * Opções de frete pra exibir no checkout (o cliente escolhe uma) assim que
@@ -211,87 +208,74 @@ export async function createOrder(input: unknown): Promise<CreateOrderResult> {
   return { orderId: order.id, orderNumber: order.order_number, total: order.total };
 }
 
-export interface SubmitPaymentResult {
-  status?: PaymentStatus;
-  orderNumber?: number;
-  pixQrCode?: string;
-  pixQrCodeBase64?: string;
-  boletoUrl?: string;
+export interface CreatePreferenceResult {
+  initPoint?: string;
   error?: string;
 }
 
 /**
- * Recebe os dados devolvidos pelo Payment Brick, recalcula o valor a
- * partir do pedido já salvo (nunca do valor enviado pelo formulário) e
- * cria o pagamento no Mercado Pago com chave de idempotência.
+ * Checkout Pro: gera a preferência de pagamento pro pedido já criado e
+ * devolve o `init_point` — a URL da página de pagamento hospedada pelo
+ * Mercado Pago pra onde o cliente é redirecionado (Pix, cartão de
+ * crédito/débito de qualquer banco e boleto aparecem todos lá).
  */
-export async function submitPayment(
-  orderId: string,
-  brickFormData: Record<string, unknown>
-): Promise<SubmitPaymentResult> {
+export async function createCheckoutPreference(orderId: string): Promise<CreatePreferenceResult> {
   if (!orderId) return { error: "Pedido inválido." };
 
   const supabase = createAdminClient();
   const { data: order, error: orderError } = await supabase
     .from("orders")
-    .select("*")
+    .select("*, order_items(*)")
     .eq("id", orderId)
     .maybeSingle();
 
   if (orderError || !order) return { error: "Pedido não encontrado." };
 
+  const items = order.order_items.map((item) => ({
+    id: item.id,
+    title: item.variation_value ? `${item.product_name} (${item.variation_value})` : item.product_name,
+    quantity: item.quantity,
+    unit_price: item.unit_price,
+    currency_id: "BRL",
+  }));
+
+  if (order.shipping_cost > 0) {
+    items.push({
+      id: "frete",
+      title: order.shipping_method || "Frete",
+      quantity: 1,
+      unit_price: order.shipping_cost,
+      currency_id: "BRL",
+    });
+  }
+
+  const isProduction = storeConfig.siteUrl.startsWith("https://");
+
   try {
-    const payment = getPaymentClient();
-    const response = await payment.create({
+    const preference = getPreferenceClient();
+    const response = await preference.create({
       body: {
-        ...brickFormData,
-        transaction_amount: order.total,
-        description: `Pedido ${storeConfig.name} #${order.order_number}`,
+        items,
         external_reference: order.id,
-        payer: {
-          ...(brickFormData.payer as Record<string, unknown> | undefined),
-          email: order.email,
+        payer: { name: order.customer_name, email: order.email },
+        back_urls: {
+          success: `${storeConfig.siteUrl}/checkout/sucesso?pedido=${order.order_number}`,
+          pending: `${storeConfig.siteUrl}/checkout/pendente?pedido=${order.order_number}`,
+          failure: `${storeConfig.siteUrl}/checkout/erro?pedido=${order.order_number}`,
         },
+        ...(isProduction ? { auto_return: "approved" as const } : {}),
         notification_url: `${storeConfig.siteUrl}/api/webhooks/mercadopago`,
+        statement_descriptor: storeConfig.shortName,
       },
-      requestOptions: { idempotencyKey: randomUUID() },
     });
 
-    const status = mapMercadoPagoStatus(response.status ?? "pending");
+    if (!response.init_point) {
+      return { error: "Não foi possível iniciar o pagamento." };
+    }
 
-    await supabase
-      .from("orders")
-      .update({
-        payment_status: status,
-        mercadopago_payment_id: response.id ? String(response.id) : null,
-      })
-      .eq("id", orderId);
-
-    const pixData = response.point_of_interaction?.transaction_data;
-
-    return {
-      status,
-      orderNumber: order.order_number,
-      pixQrCode: pixData?.qr_code ?? undefined,
-      pixQrCodeBase64: pixData?.qr_code_base64 ?? undefined,
-      boletoUrl: response.transaction_details?.external_resource_url ?? undefined,
-    };
+    return { initPoint: response.init_point };
   } catch (error) {
-    console.error("Erro ao criar pagamento no Mercado Pago", error);
-    return { error: "Não foi possível processar o pagamento. Tente novamente." };
+    console.error("Erro ao criar preferência no Mercado Pago", error);
+    return { error: "Não foi possível iniciar o pagamento. Tente novamente." };
   }
-}
-
-export async function getOrderStatus(
-  orderId: string
-): Promise<{ paymentStatus: PaymentStatus; orderNumber: number } | null> {
-  const supabase = createAdminClient();
-  const { data } = await supabase
-    .from("orders")
-    .select("payment_status, order_number")
-    .eq("id", orderId)
-    .maybeSingle();
-
-  if (!data) return null;
-  return { paymentStatus: data.payment_status, orderNumber: data.order_number };
 }

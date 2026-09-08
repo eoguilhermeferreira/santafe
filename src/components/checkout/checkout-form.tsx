@@ -1,20 +1,16 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import * as React from "react";
-import { ArrowLeft, Loader2, ShoppingBag } from "lucide-react";
+import { Loader2, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 
 import {
+  createCheckoutPreference,
   createOrder,
-  getOrderStatus,
   getShippingOptions,
-  type SubmitPaymentResult,
 } from "@/app/(store)/checkout/actions";
 import { useCart } from "@/components/cart/cart-provider";
-import { PaymentBrickForm } from "@/components/checkout/payment-brick-form";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -48,21 +44,13 @@ const EMPTY_FORM: FormState = {
   state: "",
 };
 
-type Step = "form" | "payment" | "pix";
-
 export function CheckoutForm() {
-  const router = useRouter();
-  const { items, subtotal, totalWeightGrams, clear, isHydrated } = useCart();
+  const { items, subtotal, totalWeightGrams, isHydrated } = useCart();
 
   const [form, setForm] = React.useState<FormState>(EMPTY_FORM);
   const [paymentMethod, setPaymentMethod] = React.useState<PaymentMethod>("pix");
   const [errors, setErrors] = React.useState<Partial<Record<string, string>>>({});
-  const [step, setStep] = React.useState<Step>("form");
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [order, setOrder] = React.useState<{ id: string; number: number; total: number } | null>(
-    null
-  );
-  const [pixData, setPixData] = React.useState<{ code: string; base64?: string } | null>(null);
 
   const flatShipping = calculateShipping();
   const [shippingOptions, setShippingOptions] = React.useState<ShippingOption[]>([
@@ -122,7 +110,8 @@ export function CheckoutForm() {
     }
 
     setIsSubmitting(true);
-    const result = await createOrder({
+
+    const order = await createOrder({
       customer: parsed.data,
       items: items.map((item) => ({
         productId: item.productId,
@@ -131,56 +120,26 @@ export function CheckoutForm() {
       })),
       shippingOptionId: selectedShippingId,
     });
-    setIsSubmitting(false);
 
-    if (result.error || !result.orderId || !result.orderNumber || result.total == null) {
-      toast.error(result.error ?? "Não foi possível criar o pedido");
+    if (order.error || !order.orderId) {
+      setIsSubmitting(false);
+      toast.error(order.error ?? "Não foi possível criar o pedido");
       return;
     }
 
-    setOrder({ id: result.orderId, number: result.orderNumber, total: result.total });
-    setStep("payment");
+    const preference = await createCheckoutPreference(order.orderId);
+    if (preference.error || !preference.initPoint) {
+      setIsSubmitting(false);
+      toast.error(preference.error ?? "Não foi possível iniciar o pagamento");
+      return;
+    }
+
+    // Redireciona pra página de pagamento do Mercado Pago (Checkout Pro) —
+    // navegação de página inteira, não router.push, já que sai do site.
+    window.location.href = preference.initPoint;
   }
 
-  function handlePaymentResult(result: SubmitPaymentResult) {
-    if (result.error) {
-      toast.error(result.error);
-      return;
-    }
-    if (!order) return;
-
-    if (result.status === "pago") {
-      clear();
-      router.push(`/checkout/sucesso?pedido=${order.number}`);
-      return;
-    }
-
-    if (result.status === "pendente" && result.pixQrCode) {
-      setPixData({ code: result.pixQrCode, base64: result.pixQrCodeBase64 });
-      setStep("pix");
-      return;
-    }
-
-    clear();
-    router.push(`/checkout/pendente?pedido=${order.number}`);
-  }
-
-  React.useEffect(() => {
-    if (step !== "pix" || !order) return;
-
-    const interval = setInterval(async () => {
-      const status = await getOrderStatus(order.id);
-      if (status?.paymentStatus === "pago") {
-        clear();
-        clearInterval(interval);
-        router.push(`/checkout/sucesso?pedido=${order.number}`);
-      }
-    }, 4000);
-
-    return () => clearInterval(interval);
-  }, [step, order, router, clear]);
-
-  if (isHydrated && items.length === 0 && step === "form") {
+  if (isHydrated && items.length === 0) {
     return (
       <div className="mx-auto flex max-w-xl flex-col items-center gap-4 px-4 py-24 text-center">
         <ShoppingBag className="size-12 text-muted-foreground" />
@@ -192,166 +151,103 @@ export function CheckoutForm() {
     );
   }
 
-  if (step === "pix" && pixData && order) {
-    return (
-      <div className="mx-auto max-w-md px-4 py-12 text-center">
-        <h1 className="font-display text-2xl font-semibold">Pague com Pix</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Pedido #{order.number} — {formatPrice(order.total)}
-        </p>
-        {pixData.base64 && (
-          <Image
-            src={`data:image/png;base64,${pixData.base64}`}
-            alt="QR Code Pix"
-            width={224}
-            height={224}
-            unoptimized
-            className="mx-auto mt-6 size-56"
-          />
-        )}
-        <Label className="mt-4 block text-left">Pix copia e cola</Label>
-        <div className="mt-1 flex gap-2">
-          <Input readOnly value={pixData.code} className="text-xs" />
-          <Button
-            variant="outline"
-            onClick={() => {
-              navigator.clipboard.writeText(pixData.code);
-              toast.success("Código copiado");
-            }}
-          >
-            Copiar
-          </Button>
-        </div>
-        <p className="mt-6 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="size-4 animate-spin" /> Aguardando confirmação do pagamento…
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className="mx-auto grid max-w-5xl gap-8 px-4 py-8 lg:grid-cols-3">
       <div className="lg:col-span-2">
-        {step === "form" ? (
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <Card className="space-y-4 p-6">
-              <h2 className="font-display text-lg font-semibold">Seus dados</h2>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Nome completo" error={errors.customerName} className="sm:col-span-2">
-                  <Input
-                    value={form.customerName}
-                    onChange={(e) => updateField("customerName", e.target.value)}
-                  />
-                </Field>
-                <Field label="E-mail" error={errors.email}>
-                  <Input
-                    type="email"
-                    value={form.email}
-                    onChange={(e) => updateField("email", e.target.value)}
-                  />
-                </Field>
-                <Field label="Telefone (WhatsApp)" error={errors.phone}>
-                  <Input value={form.phone} onChange={(e) => updateField("phone", e.target.value)} />
-                </Field>
-              </div>
-            </Card>
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <Card className="space-y-4 p-6">
+            <h2 className="font-display text-lg font-semibold">Seus dados</h2>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Nome completo" error={errors.customerName} className="sm:col-span-2">
+                <Input
+                  value={form.customerName}
+                  onChange={(e) => updateField("customerName", e.target.value)}
+                />
+              </Field>
+              <Field label="E-mail" error={errors.email}>
+                <Input
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => updateField("email", e.target.value)}
+                />
+              </Field>
+              <Field label="Telefone (WhatsApp)" error={errors.phone}>
+                <Input value={form.phone} onChange={(e) => updateField("phone", e.target.value)} />
+              </Field>
+            </div>
+          </Card>
 
-            <Card className="space-y-4 p-6">
-              <h2 className="font-display text-lg font-semibold">Endereço de entrega</h2>
-              <div className="grid gap-4 sm:grid-cols-3">
-                <Field label="CEP" error={errors.cep}>
-                  <Input
-                    value={formatCep(form.cep)}
-                    onChange={(e) => updateField("cep", e.target.value)}
-                    onBlur={handleCepBlur}
-                    inputMode="numeric"
-                  />
-                </Field>
-                <Field label="Rua" error={errors.street} className="sm:col-span-2">
-                  <Input value={form.street} onChange={(e) => updateField("street", e.target.value)} />
-                </Field>
-                <Field label="Número" error={errors.number}>
-                  <Input value={form.number} onChange={(e) => updateField("number", e.target.value)} />
-                </Field>
-                <Field label="Complemento" error={errors.complement}>
-                  <Input
-                    value={form.complement}
-                    onChange={(e) => updateField("complement", e.target.value)}
-                  />
-                </Field>
-                <Field label="Bairro" error={errors.neighborhood}>
-                  <Input
-                    value={form.neighborhood}
-                    onChange={(e) => updateField("neighborhood", e.target.value)}
-                  />
-                </Field>
-                <Field label="Cidade" error={errors.city}>
-                  <Input value={form.city} onChange={(e) => updateField("city", e.target.value)} />
-                </Field>
-                <Field label="UF" error={errors.state}>
-                  <Input
-                    value={form.state}
-                    maxLength={2}
-                    onChange={(e) => updateField("state", e.target.value.toUpperCase())}
-                  />
-                </Field>
-              </div>
-            </Card>
+          <Card className="space-y-4 p-6">
+            <h2 className="font-display text-lg font-semibold">Endereço de entrega</h2>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <Field label="CEP" error={errors.cep}>
+                <Input
+                  value={formatCep(form.cep)}
+                  onChange={(e) => updateField("cep", e.target.value)}
+                  onBlur={handleCepBlur}
+                  inputMode="numeric"
+                />
+              </Field>
+              <Field label="Rua" error={errors.street} className="sm:col-span-2">
+                <Input value={form.street} onChange={(e) => updateField("street", e.target.value)} />
+              </Field>
+              <Field label="Número" error={errors.number}>
+                <Input value={form.number} onChange={(e) => updateField("number", e.target.value)} />
+              </Field>
+              <Field label="Complemento" error={errors.complement}>
+                <Input
+                  value={form.complement}
+                  onChange={(e) => updateField("complement", e.target.value)}
+                />
+              </Field>
+              <Field label="Bairro" error={errors.neighborhood}>
+                <Input
+                  value={form.neighborhood}
+                  onChange={(e) => updateField("neighborhood", e.target.value)}
+                />
+              </Field>
+              <Field label="Cidade" error={errors.city}>
+                <Input value={form.city} onChange={(e) => updateField("city", e.target.value)} />
+              </Field>
+              <Field label="UF" error={errors.state}>
+                <Input
+                  value={form.state}
+                  maxLength={2}
+                  onChange={(e) => updateField("state", e.target.value.toUpperCase())}
+                />
+              </Field>
+            </div>
+          </Card>
 
-            <Card className="space-y-4 p-6">
-              <h2 className="font-display text-lg font-semibold">Forma de pagamento</h2>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                {PAYMENT_OPTIONS.map((option) => (
-                  <button
-                    type="button"
-                    key={option.value}
-                    onClick={() => setPaymentMethod(option.value)}
-                    className={`rounded-md border px-3 py-3 text-sm font-medium transition-colors ${
-                      paymentMethod === option.value
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-input hover:bg-secondary"
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            </Card>
+          <Card className="space-y-4 p-6">
+            <h2 className="font-display text-lg font-semibold">Forma de pagamento</h2>
+            <p className="text-sm text-muted-foreground">
+              Você confirma e paga na página segura do Mercado Pago — Pix, cartão de
+              crédito, débito (de qualquer banco) ou boleto.
+            </p>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {PAYMENT_OPTIONS.map((option) => (
+                <button
+                  type="button"
+                  key={option.value}
+                  onClick={() => setPaymentMethod(option.value)}
+                  className={`rounded-md border px-3 py-3 text-sm font-medium transition-colors ${
+                    paymentMethod === option.value
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-input hover:bg-secondary"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </Card>
 
-            <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
-              {isSubmitting && <Loader2 className="size-4 animate-spin" />}
-              Continuar para pagamento
-            </Button>
-          </form>
-        ) : (
-          order && (
-            <Card className="space-y-4 p-6">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="-ml-2 gap-1 text-muted-foreground hover:text-foreground"
-                onClick={() => {
-                  setStep("form");
-                  setOrder(null);
-                }}
-              >
-                <ArrowLeft className="size-4" /> Voltar
-              </Button>
-              <h2 className="font-display text-lg font-semibold">Pagamento</h2>
-              <p className="text-sm text-muted-foreground">
-                Pedido #{order.number} — total {formatPrice(order.total)}
-              </p>
-              <PaymentBrickForm
-                orderId={order.id}
-                amount={order.total}
-                payerEmail={form.email}
-                method={paymentMethod}
-                onResult={handlePaymentResult}
-              />
-            </Card>
-          )
-        )}
+          <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+            {isSubmitting && <Loader2 className="size-4 animate-spin" />}
+            Ir para pagamento
+          </Button>
+        </form>
       </div>
 
       <Card className="h-fit space-y-3 p-6">
@@ -373,12 +269,7 @@ export function CheckoutForm() {
             <span>{formatPrice(subtotal)}</span>
           </div>
 
-          {step !== "form" ? (
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">{shipping.label}</span>
-              <span>{formatPrice(shipping.cost)}</span>
-            </div>
-          ) : isShippingLoading ? (
+          {isShippingLoading ? (
             <div className="flex items-center gap-2 text-muted-foreground">
               <Loader2 className="size-3.5 animate-spin" /> Calculando frete…
             </div>

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-import { getPaymentClient, mapMercadoPagoStatus } from "@/lib/mercadopago";
+import { getPaymentClient, mapMercadoPagoPaymentType, mapMercadoPagoStatus } from "@/lib/mercadopago";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
@@ -32,6 +32,10 @@ export async function POST(request: NextRequest) {
     if (!orderId) return NextResponse.json({ received: true });
 
     const status = mapMercadoPagoStatus(payment.status ?? "pending");
+    // No Checkout Pro o cliente escolhe a forma de pagamento na página do
+    // Mercado Pago (pode ser diferente da pré-selecionada no checkout do
+    // site) — atualiza com o que foi usado de fato, quando reconhecido.
+    const paymentMethod = mapMercadoPagoPaymentType(payment.payment_type_id);
     const supabase = createAdminClient();
 
     await supabase
@@ -39,6 +43,7 @@ export async function POST(request: NextRequest) {
       .update({
         payment_status: status,
         mercadopago_payment_id: payment.id ? String(payment.id) : undefined,
+        ...(paymentMethod ? { payment_method: paymentMethod } : {}),
       })
       .eq("id", orderId);
 

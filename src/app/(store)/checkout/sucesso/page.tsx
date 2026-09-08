@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 
+import { ClearCartOnMount } from "@/components/cart/clear-cart-on-mount";
 import { Button } from "@/components/ui/button";
 import { WhatsAppIcon } from "@/components/icons/whatsapp-icon";
 import { storeConfig } from "@/config/store";
@@ -16,6 +17,7 @@ export default async function CheckoutSucessoPage({
 
   return (
     <div className="mx-auto flex max-w-md flex-col items-center gap-4 px-4 py-24 text-center">
+      <ClearCartOnMount />
       <CheckCircle2 className="size-16 text-accent" />
       <h1 className="font-display text-2xl font-semibold">Pagamento confirmado!</h1>
       <p className="text-muted-foreground">

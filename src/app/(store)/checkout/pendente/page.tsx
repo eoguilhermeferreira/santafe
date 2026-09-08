@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Clock } from "lucide-react";
 
+import { ClearCartOnMount } from "@/components/cart/clear-cart-on-mount";
 import { Button } from "@/components/ui/button";
 
 export const metadata = { title: "Pagamento pendente" };
@@ -14,6 +15,7 @@ export default async function CheckoutPendentePage({
 
   return (
     <div className="mx-auto flex max-w-md flex-col items-center gap-4 px-4 py-24 text-center">
+      <ClearCartOnMount />
       <Clock className="size-16 text-accent" />
       <h1 className="font-display text-2xl font-semibold">Pagamento em análise</h1>
       <p className="text-muted-foreground">
