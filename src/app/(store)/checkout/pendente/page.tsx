@@ -22,9 +22,14 @@ export default async function CheckoutPendentePage({
         {pedido ? `Recebemos seu pedido #${pedido}. ` : "Recebemos seu pedido. "}
         Assim que a confirmação do pagamento chegar, você será avisado.
       </p>
-      <Button asChild size="lg">
-        <Link href="/produtos">Continuar comprando</Link>
-      </Button>
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <Button asChild size="lg">
+          <Link href={pedido ? `/pedido?numero=${pedido}` : "/pedido"}>Consultar / pagar pedido</Link>
+        </Button>
+        <Button asChild size="lg" variant="outline">
+          <Link href="/produtos">Continuar comprando</Link>
+        </Button>
+      </div>
     </div>
   );
 }

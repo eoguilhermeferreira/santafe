@@ -230,6 +230,7 @@ export async function createCheckoutPreference(orderId: string): Promise<CreateP
     .maybeSingle();
 
   if (orderError || !order) return { error: "Pedido não encontrado." };
+  if (order.payment_status === "pago") return { error: "Este pedido já foi pago." };
 
   const items = order.order_items.map((item) => ({
     id: item.id,
