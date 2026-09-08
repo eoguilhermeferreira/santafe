@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { Loader2, ShoppingBag } from "lucide-react";
+import { ArrowLeft, Loader2, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -326,6 +326,18 @@ export function CheckoutForm() {
         ) : (
           order && (
             <Card className="space-y-4 p-6">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="-ml-2 gap-1 text-muted-foreground hover:text-foreground"
+                onClick={() => {
+                  setStep("form");
+                  setOrder(null);
+                }}
+              >
+                <ArrowLeft className="size-4" /> Voltar
+              </Button>
               <h2 className="font-display text-lg font-semibold">Pagamento</h2>
               <p className="text-sm text-muted-foreground">
                 Pedido #{order.number} — total {formatPrice(order.total)}
@@ -361,7 +373,12 @@ export function CheckoutForm() {
             <span>{formatPrice(subtotal)}</span>
           </div>
 
-          {isShippingLoading ? (
+          {step !== "form" ? (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">{shipping.label}</span>
+              <span>{formatPrice(shipping.cost)}</span>
+            </div>
+          ) : isShippingLoading ? (
             <div className="flex items-center gap-2 text-muted-foreground">
               <Loader2 className="size-3.5 animate-spin" /> Calculando frete…
             </div>
