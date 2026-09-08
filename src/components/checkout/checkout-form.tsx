@@ -7,7 +7,12 @@ import * as React from "react";
 import { Loader2, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 
-import { createOrder, getOrderStatus, type SubmitPaymentResult } from "@/app/(store)/checkout/actions";
+import {
+  createOrder,
+  estimateShipping,
+  getOrderStatus,
+  type SubmitPaymentResult,
+} from "@/app/(store)/checkout/actions";
 import { useCart } from "@/components/cart/cart-provider";
 import { PaymentBrickForm } from "@/components/checkout/payment-brick-form";
 import { Button } from "@/components/ui/button";
@@ -46,7 +51,7 @@ type Step = "form" | "payment" | "pix";
 
 export function CheckoutForm() {
   const router = useRouter();
-  const { items, subtotal, clear, isHydrated } = useCart();
+  const { items, subtotal, totalWeightGrams, clear, isHydrated } = useCart();
 
   const [form, setForm] = React.useState<FormState>(EMPTY_FORM);
   const [paymentMethod, setPaymentMethod] = React.useState<PaymentMethod>("pix");
@@ -58,13 +63,16 @@ export function CheckoutForm() {
   );
   const [pixData, setPixData] = React.useState<{ code: string; base64?: string } | null>(null);
 
-  const shipping = calculateShipping();
+  const [shipping, setShipping] = React.useState(calculateShipping());
+  const [isShippingLoading, setIsShippingLoading] = React.useState(false);
 
   function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [key]: value }));
   }
 
   async function handleCepBlur() {
+    const digits = onlyDigits(form.cep);
+
     const address = await fetchAddressByCep(form.cep);
     if (address) {
       setForm((current) => ({
@@ -74,6 +82,13 @@ export function CheckoutForm() {
         city: address.city || current.city,
         state: address.state || current.state,
       }));
+    }
+
+    if (digits.length === 8) {
+      setIsShippingLoading(true);
+      const quote = await estimateShipping(digits, totalWeightGrams);
+      setShipping(quote);
+      setIsShippingLoading(false);
     }
   }
 
@@ -337,8 +352,15 @@ export function CheckoutForm() {
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">{shipping.label}</span>
-            <span>{formatPrice(shipping.cost)}</span>
+            {isShippingLoading ? (
+              <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
+            ) : (
+              <span>{formatPrice(shipping.cost)}</span>
+            )}
           </div>
+          <p className="text-xs text-muted-foreground">
+            Valor final do frete confirmado ao preencher o CEP.
+          </p>
         </div>
         <div className="flex justify-between border-t border-border pt-3 font-display text-lg font-semibold">
           <span>Total</span>

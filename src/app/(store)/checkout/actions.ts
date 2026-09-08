@@ -3,6 +3,7 @@
 import { randomUUID } from "node:crypto";
 
 import { checkoutSchema, checkoutItemSchema } from "@/lib/checkout-schema";
+import { getMelhorEnvioQuote } from "@/lib/melhor-envio";
 import { getPaymentClient, mapMercadoPagoStatus } from "@/lib/mercadopago";
 import { calculateShipping } from "@/lib/shipping";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -10,6 +11,16 @@ import { onlyDigits } from "@/lib/format";
 import { storeConfig } from "@/config/store";
 import { z } from "zod";
 import type { PaymentStatus } from "@/types/database.types";
+
+/**
+ * Cotação de frete pra exibir no checkout enquanto o cliente digita o CEP.
+ * Tenta o Melhor Envio (preço real por CEP/peso); sem token configurado ou
+ * se a cotação falhar, cai pro frete fixo.
+ */
+export async function estimateShipping(cep: string, weightGrams: number) {
+  const quote = await getMelhorEnvioQuote({ toCep: cep, weightGrams });
+  return quote ?? calculateShipping();
+}
 
 const createOrderInput = z.object({
   customer: checkoutSchema,
@@ -104,12 +115,14 @@ export async function createOrder(input: unknown): Promise<CreateOrderResult> {
   }[] = [];
 
   let subtotal = 0;
+  let totalWeightGrams = 0;
 
   for (const item of items) {
     const product = products?.find((p) => p.id === item.productId);
     if (!product || !product.is_active) {
       return { error: `Produto indisponível no pedido.` };
     }
+    totalWeightGrams += product.weight_grams * item.quantity;
 
     let stock = product.stock;
     let variationLabel: string | null = null;
@@ -140,7 +153,7 @@ export async function createOrder(input: unknown): Promise<CreateOrderResult> {
     });
   }
 
-  const shipping = calculateShipping();
+  const shipping = await estimateShipping(customer.cep, totalWeightGrams);
   const total = subtotal + shipping.cost;
   const customerId = await upsertCustomerFromCheckout(supabase, customer);
 
