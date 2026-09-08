@@ -29,6 +29,10 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#faf9f5",
+  // Trava o zoom automático que o Safari/Chrome no celular dão ao focar um
+  // campo (acontece até em campos de fora do nosso controle, como os do
+  // formulário de cartão do Mercado Pago, que ficam num iframe).
+  maximumScale: 1,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
