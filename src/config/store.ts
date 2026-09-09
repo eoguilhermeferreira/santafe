@@ -31,4 +31,12 @@ export const storeConfig = {
   shipping: {
     flatRateCents: 1000,
   },
+
+  /** Frases que giram na barra fixa no topo da loja, acima do header. */
+  announcements: [
+    "Enviamos para todo o Brasil",
+    "Bíblias e artigos para sua vida de oração",
+    "Sua fé, presente em cada detalhe",
+    "Parcelamos no cartão",
+  ],
 } as const;

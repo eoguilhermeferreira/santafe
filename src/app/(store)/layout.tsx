@@ -1,3 +1,4 @@
+import { AnnouncementBar } from "@/components/store/announcement-bar";
 import { Footer } from "@/components/store/footer";
 import { Header } from "@/components/store/header";
 import { WhatsAppFloatButton } from "@/components/store/whatsapp-float-button";
@@ -12,6 +13,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
 
   return (
     <div className="flex min-h-screen flex-col">
+      <AnnouncementBar />
       <Header categories={categories} />
       <main className="flex-1">{children}</main>
       <Footer />
