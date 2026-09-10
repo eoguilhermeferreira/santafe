@@ -1,7 +1,9 @@
 "use client";
 
 import * as React from "react";
+import { BookOpenText, CreditCard, Truck } from "lucide-react";
 
+import { CrucifixIcon } from "@/components/icons/religious-icons";
 import { storeConfig } from "@/config/store";
 import { cn } from "@/lib/utils";
 
@@ -9,6 +11,9 @@ const ROTATE_MS = 3800;
 const EXIT_MS = 450;
 
 type Phase = "idle" | "exiting" | "entering";
+
+// Um ícone pra cada frase de storeConfig.announcements, na mesma ordem.
+const ICONS = [Truck, BookOpenText, CrucifixIcon, CreditCard];
 
 /**
  * Barra fixa no topo da loja com frases que giram sozinhas: a frase atual
@@ -41,20 +46,25 @@ export function AnnouncementBar() {
     };
   }, [messages.length]);
 
+  const Icon = ICONS[index % ICONS.length];
+
   return (
     <div className="h-9 overflow-hidden bg-primary text-primary-foreground">
       <div className="mx-auto flex h-full max-w-7xl items-center justify-center px-4">
-        <p
+        <div
           className={cn(
-            "text-center text-xs font-medium tracking-wide sm:text-sm",
+            "flex items-center gap-2",
             phase === "entering" ? "transition-none" : "transition-all duration-500 ease-in-out",
             phase === "exiting" && "translate-y-4 opacity-0",
             phase === "entering" && "-translate-y-4 opacity-0",
             phase === "idle" && "translate-y-0 opacity-100"
           )}
         >
-          {messages[index]}
-        </p>
+          <Icon className="size-3.5 shrink-0 sm:size-4" />
+          <p className="text-center text-xs font-medium tracking-wide sm:text-sm">
+            {messages[index]}
+          </p>
+        </div>
       </div>
     </div>
   );
