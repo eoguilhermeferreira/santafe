@@ -6,6 +6,7 @@ import { FacebookIcon } from "@/components/icons/facebook-icon";
 import { InstagramIcon } from "@/components/icons/instagram-icon";
 import { TikTokIcon } from "@/components/icons/tiktok-icon";
 import { WhatsAppIcon } from "@/components/icons/whatsapp-icon";
+import { PaymentIcons } from "@/components/store/payment-icons";
 import { storeConfig } from "@/config/store";
 import { formatCep } from "@/lib/format";
 
@@ -103,6 +104,15 @@ export function Footer() {
             </div>
           </div>
         )}
+      </div>
+
+      <div className="border-t border-primary-foreground/10 px-4 py-6">
+        <div className="mx-auto flex max-w-7xl flex-col items-center gap-2">
+          <span className="text-xs font-semibold text-primary-foreground/60">
+            Formas de pagamento
+          </span>
+          <PaymentIcons />
+        </div>
       </div>
 
       <div className="border-t border-primary-foreground/10 px-4 py-4 text-center text-xs text-primary-foreground/50">
