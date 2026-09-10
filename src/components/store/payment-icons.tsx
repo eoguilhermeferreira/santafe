@@ -12,17 +12,17 @@ const CARD_BRANDS = [
 export function PaymentIcons() {
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <PixBadge className="h-6 w-auto rounded-md" />
+      <PixBadge className="h-8 w-auto rounded-md" />
       {CARD_BRANDS.map((brand) => (
         // eslint-disable-next-line @next/next/no-img-element -- SVG decorativo local, next/image exigiria dangerouslyAllowSVG
         <img
           key={brand.name}
           src={brand.src}
           alt={brand.name}
-          className="h-6 w-auto rounded-md"
+          className="h-8 w-auto rounded-md"
         />
       ))}
-      <BoletoBadge className="h-6 w-auto rounded-md" />
+      <BoletoBadge className="h-8 w-auto rounded-md" />
     </div>
   );
 }

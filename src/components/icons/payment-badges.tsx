@@ -25,37 +25,37 @@ export function PixBadge({ className }: IconProps) {
 export function BoletoBadge({ className }: IconProps) {
   return (
     <svg viewBox="0 0 750 471" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Boleto" className={className}>
-      <rect width="750" height="471" rx="40" fill="#1F2937" />
-      <rect x="256.0" y="140.5" width="4" height="190" fill="#fff" />
-      <rect x="266.0" y="140.5" width="2" height="190" fill="#fff" />
-      <rect x="274.0" y="140.5" width="6" height="190" fill="#fff" />
-      <rect x="286.0" y="140.5" width="3" height="190" fill="#fff" />
-      <rect x="295.0" y="140.5" width="2" height="190" fill="#fff" />
-      <rect x="303.0" y="140.5" width="5" height="190" fill="#fff" />
-      <rect x="314.0" y="140.5" width="3" height="190" fill="#fff" />
-      <rect x="323.0" y="140.5" width="7" height="190" fill="#fff" />
-      <rect x="336.0" y="140.5" width="2" height="190" fill="#fff" />
-      <rect x="344.0" y="140.5" width="4" height="190" fill="#fff" />
-      <rect x="354.0" y="140.5" width="6" height="190" fill="#fff" />
-      <rect x="366.0" y="140.5" width="2" height="190" fill="#fff" />
-      <rect x="374.0" y="140.5" width="3" height="190" fill="#fff" />
-      <rect x="383.0" y="140.5" width="5" height="190" fill="#fff" />
-      <rect x="394.0" y="140.5" width="2" height="190" fill="#fff" />
-      <rect x="402.0" y="140.5" width="4" height="190" fill="#fff" />
-      <rect x="412.0" y="140.5" width="7" height="190" fill="#fff" />
-      <rect x="425.0" y="140.5" width="3" height="190" fill="#fff" />
-      <rect x="434.0" y="140.5" width="2" height="190" fill="#fff" />
-      <rect x="442.0" y="140.5" width="6" height="190" fill="#fff" />
-      <rect x="454.0" y="140.5" width="4" height="190" fill="#fff" />
-      <rect x="464.0" y="140.5" width="2" height="190" fill="#fff" />
-      <rect x="472.0" y="140.5" width="5" height="190" fill="#fff" />
-      <rect x="483.0" y="140.5" width="3" height="190" fill="#fff" />
-      <rect x="492.0" y="140.5" width="2" height="190" fill="#fff" />
+      <rect width="750" height="471" rx="40" fill="#fff" stroke="#D1D5DB" strokeWidth="2" />
+      <rect x="256.0" y="140.5" width="4" height="190" fill="#111827" />
+      <rect x="266.0" y="140.5" width="2" height="190" fill="#111827" />
+      <rect x="274.0" y="140.5" width="6" height="190" fill="#111827" />
+      <rect x="286.0" y="140.5" width="3" height="190" fill="#111827" />
+      <rect x="295.0" y="140.5" width="2" height="190" fill="#111827" />
+      <rect x="303.0" y="140.5" width="5" height="190" fill="#111827" />
+      <rect x="314.0" y="140.5" width="3" height="190" fill="#111827" />
+      <rect x="323.0" y="140.5" width="7" height="190" fill="#111827" />
+      <rect x="336.0" y="140.5" width="2" height="190" fill="#111827" />
+      <rect x="344.0" y="140.5" width="4" height="190" fill="#111827" />
+      <rect x="354.0" y="140.5" width="6" height="190" fill="#111827" />
+      <rect x="366.0" y="140.5" width="2" height="190" fill="#111827" />
+      <rect x="374.0" y="140.5" width="3" height="190" fill="#111827" />
+      <rect x="383.0" y="140.5" width="5" height="190" fill="#111827" />
+      <rect x="394.0" y="140.5" width="2" height="190" fill="#111827" />
+      <rect x="402.0" y="140.5" width="4" height="190" fill="#111827" />
+      <rect x="412.0" y="140.5" width="7" height="190" fill="#111827" />
+      <rect x="425.0" y="140.5" width="3" height="190" fill="#111827" />
+      <rect x="434.0" y="140.5" width="2" height="190" fill="#111827" />
+      <rect x="442.0" y="140.5" width="6" height="190" fill="#111827" />
+      <rect x="454.0" y="140.5" width="4" height="190" fill="#111827" />
+      <rect x="464.0" y="140.5" width="2" height="190" fill="#111827" />
+      <rect x="472.0" y="140.5" width="5" height="190" fill="#111827" />
+      <rect x="483.0" y="140.5" width="3" height="190" fill="#111827" />
+      <rect x="492.0" y="140.5" width="2" height="190" fill="#111827" />
       <text
         x="375"
         y="370"
         textAnchor="middle"
-        fill="#fff"
+        fill="#111827"
         fontFamily="Arial, sans-serif"
         fontSize="52"
         fontWeight="700"
