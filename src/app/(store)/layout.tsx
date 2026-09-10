@@ -13,8 +13,10 @@ export default async function StoreLayout({ children }: { children: React.ReactN
 
   return (
     <div className="flex min-h-screen flex-col">
-      <AnnouncementBar />
-      <Header categories={categories} />
+      <div className="sticky top-0 z-40">
+        <AnnouncementBar />
+        <Header categories={categories} />
+      </div>
       <main className="flex-1">{children}</main>
       <Footer />
       <WhatsAppFloatButton />

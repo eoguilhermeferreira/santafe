@@ -60,7 +60,7 @@ export function Header({ categories }: { categories: Category[] }) {
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 transition-colors duration-300",
+        "transition-colors duration-300",
         isHomeOverlay
           ? "bg-gradient-to-b from-black/45 via-black/10 to-transparent"
           : "border-b border-border bg-background/95 backdrop-blur"
