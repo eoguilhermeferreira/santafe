@@ -55,7 +55,14 @@ export function Footer() {
             >
               <Mail className="size-4" /> {storeConfig.contact.email}
             </a>
-            <span className="flex items-start gap-2">
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                `${storeConfig.address.street}, ${storeConfig.address.number} - ${storeConfig.address.city}/${storeConfig.address.state}, ${storeConfig.address.cep}`
+              )}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-start gap-2 hover:text-accent"
+            >
               <MapPin className="size-4 shrink-0 translate-y-0.5" />
               <span>
                 {storeConfig.address.street}, {storeConfig.address.number}
@@ -63,7 +70,7 @@ export function Footer() {
                 {storeConfig.address.city} - {storeConfig.address.state}, CEP{" "}
                 {formatCep(storeConfig.address.cep)}
               </span>
-            </span>
+            </a>
           </div>
         </div>
 
