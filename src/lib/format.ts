@@ -32,6 +32,14 @@ export function onlyDigits(value: string): string {
   return value.replace(/\D/g, "");
 }
 
+/** Formata telefone BR (com ou sem código do país "55") como (14) 99763-0452 */
+export function formatPhone(value: string): string {
+  const digits = onlyDigits(value).replace(/^55(?=\d{10,11}$)/, "");
+  if (digits.length === 11) return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  if (digits.length === 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  return value;
+}
+
 const DIACRITICS_REGEX = new RegExp("[̀-ͯ]", "g");
 
 export function slugify(value: string): string {

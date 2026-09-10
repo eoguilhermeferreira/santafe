@@ -31,6 +31,8 @@ export function Footer() {
           <nav className="mt-2 flex flex-col gap-1.5 text-sm text-primary-foreground/60">
             <Link href="/produtos" className="hover:text-accent">Todos os produtos</Link>
             <Link href="/carrinho" className="hover:text-accent">Meu carrinho</Link>
+            <Link href="/perguntas-frequentes" className="hover:text-accent">Perguntas frequentes</Link>
+            <Link href="/pedido" className="hover:text-accent">Consultar meu pedido</Link>
           </nav>
         </div>
 
