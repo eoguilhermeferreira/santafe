@@ -28,7 +28,7 @@ const FAQ_ITEMS = [
   },
   {
     question: "A loja é confiável?",
-    answer: `Sim! A ${storeConfig.name} é uma empresa registrada (CNPJ ${storeConfig.cnpj}), e o pagamento é processado com segurança pelo Mercado Pago. Nosso WhatsApp, e-mail e redes sociais estão no rodapé do site — é só chamar se tiver qualquer dúvida antes de comprar.`,
+    answer: `Sim! A ${storeConfig.name} é uma empresa registrada (CNPJ ${storeConfig.cnpj}), com endereço em ${storeConfig.address.street}, ${storeConfig.address.number} - ${storeConfig.address.city}/${storeConfig.address.state}, e pagamento processado com segurança pelo Mercado Pago. Nosso WhatsApp, e-mail e redes sociais estão no rodapé do site — é só chamar se tiver qualquer dúvida antes de comprar.`,
   },
   {
     question: "Os produtos servem para presentear?",

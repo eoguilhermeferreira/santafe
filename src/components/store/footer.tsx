@@ -7,6 +7,7 @@ import { InstagramIcon } from "@/components/icons/instagram-icon";
 import { TikTokIcon } from "@/components/icons/tiktok-icon";
 import { WhatsAppIcon } from "@/components/icons/whatsapp-icon";
 import { storeConfig } from "@/config/store";
+import { formatCep } from "@/lib/format";
 
 export function Footer() {
   const { instagram, tiktok, facebook } = storeConfig.contact;
@@ -53,8 +54,14 @@ export function Footer() {
             >
               <Mail className="size-4" /> {storeConfig.contact.email}
             </a>
-            <span className="flex items-center gap-2">
-              <MapPin className="size-4" /> {storeConfig.address.city} - {storeConfig.address.state}
+            <span className="flex items-start gap-2">
+              <MapPin className="size-4 shrink-0 translate-y-0.5" />
+              <span>
+                {storeConfig.address.street}, {storeConfig.address.number}
+                <br />
+                {storeConfig.address.city} - {storeConfig.address.state}, CEP{" "}
+                {formatCep(storeConfig.address.cep)}
+              </span>
             </span>
           </div>
         </div>

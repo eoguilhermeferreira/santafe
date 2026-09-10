@@ -19,8 +19,11 @@ export const storeConfig = {
   },
 
   address: {
+    street: "Rua São Paulo",
+    number: "935",
     city: "Avaré",
     state: "SP",
+    cep: "18700070",
   },
 
   /**
