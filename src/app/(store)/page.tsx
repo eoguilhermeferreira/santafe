@@ -1,15 +1,21 @@
+import Link from "next/link";
+
 import { BannerCarousel } from "@/components/store/banner-carousel";
 import { CategoryGrid } from "@/components/store/category-grid";
+import { FaqAccordion } from "@/components/store/faq-accordion";
 import { PromoBanner, PromoSquareBanner } from "@/components/store/promo-banner";
 import { ProductSection } from "@/components/store/product-section";
 import { Reveal } from "@/components/store/reveal";
 import { storeConfig } from "@/config/store";
+import { FAQ_ITEMS } from "@/lib/faq";
 import {
   getActiveBanners,
   getCategories,
   getProducts,
   getProductsByHomeSection,
 } from "@/lib/queries";
+
+const HIGHLIGHT_FAQ_ITEMS = FAQ_ITEMS.filter((item) => item.highlight);
 
 export default async function HomePage() {
   const [banners, categories, maisVendidos, novidades, ofertas, imagens, tercos] =
@@ -88,6 +94,21 @@ export default async function HomePage() {
 
         <Reveal>
           <ProductSection title="Terços" href="/categoria/tercos" products={tercos.products} />
+        </Reveal>
+
+        <Reveal className="space-y-4">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <h2 className="font-display text-xl font-semibold sm:text-2xl">
+              Perguntas frequentes
+            </h2>
+            <Link
+              href="/perguntas-frequentes"
+              className="text-sm font-medium text-accent hover:underline"
+            >
+              Ver todas as perguntas
+            </Link>
+          </div>
+          <FaqAccordion items={HIGHLIGHT_FAQ_ITEMS} />
         </Reveal>
 
         <Reveal>

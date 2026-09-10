@@ -9,6 +9,7 @@ import { Menu, Search } from "lucide-react";
 import { CartSheet } from "@/components/store/cart-sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
   SheetClose,
@@ -113,6 +114,20 @@ export function Header({ categories }: { categories: Category[] }) {
                     </Link>
                   </SheetClose>
                 ))}
+                <Separator className="my-2" />
+                <SheetClose asChild>
+                  <Link
+                    href="/perguntas-frequentes"
+                    className="rounded-md px-2 py-2 text-sm hover:bg-secondary"
+                  >
+                    Perguntas frequentes
+                  </Link>
+                </SheetClose>
+                <SheetClose asChild>
+                  <Link href="/pedido" className="rounded-md px-2 py-2 text-sm hover:bg-secondary">
+                    Consultar meu pedido
+                  </Link>
+                </SheetClose>
               </nav>
             </SheetContent>
           </Sheet>
