@@ -6,6 +6,7 @@ import { getPreferenceClient } from "@/lib/mercadopago";
 import { calculateShipping } from "@/lib/shipping";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { onlyDigits } from "@/lib/format";
+import { fetchAddressByCep } from "@/lib/viacep";
 import { storeConfig } from "@/config/store";
 import { z } from "zod";
 
@@ -23,14 +24,35 @@ const PICKUP_SHIPPING_OPTION: ShippingOption = {
 /**
  * Opções de frete por transportadora pra exibir no checkout (o cliente
  * escolhe uma) assim que preenche o CEP — só chamado quando o cliente
- * escolheu "Entrega". Tenta o Melhor Envio (preço real por CEP/peso, só
- * Correios/Jadlog/Loggi, até 2 serviços de cada); sem token configurado ou
- * se a cotação falhar/vier vazia, cai pro frete fixo como única opção.
+ * escolheu "Entrega".
+ *
+ * Regra: dentro de Avaré/SP a entrega é feita pela própria loja (não por
+ * transportadora), então nem consulta o Melhor Envio — mostra direto o
+ * frete fixo local. Fora de Avaré, tenta o Melhor Envio (preço real por
+ * CEP/peso, só Correios/Jadlog/Loggi, até 2 serviços de cada); sem token
+ * configurado ou se a cotação falhar/vier vazia, cai pro frete fixo como
+ * única opção.
  */
 export async function getShippingOptions(
   cep: string,
   weightGrams: number
 ): Promise<ShippingOption[]> {
+  const address = await fetchAddressByCep(cep);
+  const isLocal =
+    address?.city.trim().toLowerCase() === storeConfig.address.city.toLowerCase() &&
+    address?.state.trim().toUpperCase() === storeConfig.address.state;
+
+  if (isLocal) {
+    const flat = calculateShipping();
+    return [
+      {
+        id: "flat",
+        label: `Entrega em ${storeConfig.address.city}/${storeConfig.address.state}`,
+        cost: flat.cost,
+      },
+    ];
+  }
+
   const options = await getMelhorEnvioOptions({ toCep: cep, weightGrams });
   if (options.length > 0) return options;
   const flat = calculateShipping();

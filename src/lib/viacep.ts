@@ -5,7 +5,7 @@ export interface ViaCepAddress {
   state: string;
 }
 
-/** Busca endereço pelo CEP na API pública do ViaCEP (chamada no client). */
+/** Busca endereço pelo CEP na API pública do ViaCEP (client ou server). */
 export async function fetchAddressByCep(cep: string): Promise<ViaCepAddress | null> {
   const digits = cep.replace(/\D/g, "");
   if (digits.length !== 8) return null;
