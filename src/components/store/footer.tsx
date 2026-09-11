@@ -128,17 +128,24 @@ export function Footer() {
           total ou parcial, nos termos da Lei nº 9.610/98. Todos os direitos reservados.
         </p>
         <p className="mt-1">CNPJ: {storeConfig.cnpj}</p>
-        <p className="mt-3">
-          Feito pela{" "}
-          <a
-            href="https://instagram.com/agencynodex"
-            target="_blank"
-            rel="noreferrer"
-            className="font-medium text-primary-foreground/70 hover:text-accent"
-          >
-            Agência Nodex
-          </a>
-        </p>
+      </div>
+
+      <div className="border-t border-primary-foreground/10 px-4 py-6 text-center">
+        <p className="text-xs text-primary-foreground/50">Desenvolvido por</p>
+        <a
+          href="https://instagram.com/agencynodex"
+          target="_blank"
+          rel="noreferrer"
+          className="mt-2 inline-block opacity-70 transition-opacity hover:opacity-100"
+        >
+          <Image
+            src="/nodex-logo.png"
+            alt="Agência Nodex"
+            width={2172}
+            height={724}
+            className="h-16 w-auto"
+          />
+        </a>
       </div>
     </footer>
   );
