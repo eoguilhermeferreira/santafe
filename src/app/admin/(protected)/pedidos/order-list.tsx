@@ -17,6 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { DeliveryStatusBadge, PaymentStatusBadge } from "@/components/admin/status-badge";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDateTime, formatPrice } from "@/lib/format";
@@ -82,7 +83,12 @@ export function OrderList({ initialOrders }: { initialOrders: OrderWithItems[] }
                 <PaymentStatusBadge status={order.payment_status} />
               </TableCell>
               <TableCell>
-                <DeliveryStatusBadge status={order.delivery_status} />
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <DeliveryStatusBadge status={order.delivery_status} />
+                  {order.delivery_method === "retirada" && (
+                    <Badge variant="secondary">Retirada</Badge>
+                  )}
+                </div>
               </TableCell>
               <TableCell>
                 <AlertDialog>

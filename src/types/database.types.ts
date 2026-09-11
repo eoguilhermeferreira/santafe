@@ -13,7 +13,9 @@ export type DeliveryStatus =
   | "preparando"
   | "enviado"
   | "entregue"
+  | "pronto_para_retirar"
   | "cancelado";
+export type DeliveryMethod = "entrega" | "retirada";
 
 export interface Database {
   public: {
@@ -183,6 +185,7 @@ export interface Database {
           payment_method: PaymentMethod;
           payment_status: PaymentStatus;
           delivery_status: DeliveryStatus;
+          delivery_method: DeliveryMethod;
           mercadopago_payment_id: string | null;
           created_at: string;
           updated_at: string;
@@ -268,6 +271,7 @@ export interface Database {
       payment_method: PaymentMethod;
       payment_status: PaymentStatus;
       delivery_status: DeliveryStatus;
+      delivery_method: DeliveryMethod;
     };
     CompositeTypes: Record<string, never>;
   };

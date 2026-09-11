@@ -9,20 +9,29 @@ import { onlyDigits } from "@/lib/format";
 import { storeConfig } from "@/config/store";
 import { z } from "zod";
 
+/** Retirar na loja: sempre disponível como última opção, sem custo. */
+const PICKUP_OPTION: ShippingOption = {
+  id: "retirada",
+  label: "Retirar na loja (grátis)",
+  cost: 0,
+};
+
 /**
  * Opções de frete pra exibir no checkout (o cliente escolhe uma) assim que
  * preenche o CEP. Tenta o Melhor Envio (preço real por CEP/peso, só
  * Correios/Jadlog/Loggi, até 2 serviços de cada); sem token configurado ou
  * se a cotação falhar/vier vazia, cai pro frete fixo como única opção.
+ * Em qualquer caso, "Retirar na loja" sempre aparece por último — nunca é a
+ * opção pré-selecionada, o cliente escolhe ela conscientemente.
  */
 export async function getShippingOptions(
   cep: string,
   weightGrams: number
 ): Promise<ShippingOption[]> {
   const options = await getMelhorEnvioOptions({ toCep: cep, weightGrams });
-  if (options.length > 0) return options;
+  if (options.length > 0) return [...options, PICKUP_OPTION];
   const flat = calculateShipping();
-  return [{ id: "flat", label: flat.label, cost: flat.cost }];
+  return [{ id: "flat", label: flat.label, cost: flat.cost }, PICKUP_OPTION];
 }
 
 const createOrderInput = z.object({
@@ -163,6 +172,7 @@ export async function createOrder(input: unknown): Promise<CreateOrderResult> {
   const shippingOptions = await getShippingOptions(customer.cep, totalWeightGrams);
   const shipping =
     shippingOptions.find((option) => option.id === shippingOptionId) ?? shippingOptions[0];
+  const isPickup = shipping.id === PICKUP_OPTION.id;
   const total = subtotal + shipping.cost;
   const customerId = await upsertCustomerFromCheckout(supabase, customer);
 
@@ -189,6 +199,7 @@ export async function createOrder(input: unknown): Promise<CreateOrderResult> {
       payment_method: customer.paymentMethod,
       payment_status: "pendente",
       delivery_status: "recebido",
+      delivery_method: isPickup ? "retirada" : "entrega",
     })
     .select("id, order_number, total")
     .single();

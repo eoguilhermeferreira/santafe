@@ -16,8 +16,26 @@ const DELIVERY_LABELS: Record<DeliveryStatus, { label: string; variant: BadgeVar
   preparando: { label: "Preparando", variant: "warning" },
   enviado: { label: "Enviado", variant: "default" },
   entregue: { label: "Entregue", variant: "success" },
+  pronto_para_retirar: { label: "Pronto para retirar", variant: "success" },
   cancelado: { label: "Cancelado", variant: "destructive" },
 };
+
+/** Opções de status mostradas no admin pra pedidos com entrega (Correios/transportadora). */
+const SHIPPING_DELIVERY_STATUSES: DeliveryStatus[] = [
+  "recebido",
+  "preparando",
+  "enviado",
+  "entregue",
+  "cancelado",
+];
+
+/** Opções de status mostradas no admin pra pedidos de retirada na loja. */
+const PICKUP_DELIVERY_STATUSES: DeliveryStatus[] = [
+  "recebido",
+  "preparando",
+  "pronto_para_retirar",
+  "cancelado",
+];
 
 export function PaymentStatusBadge({ status }: { status: PaymentStatus }) {
   const { label, variant } = PAYMENT_LABELS[status];
@@ -29,4 +47,4 @@ export function DeliveryStatusBadge({ status }: { status: DeliveryStatus }) {
   return <Badge variant={variant}>{label}</Badge>;
 }
 
-export { PAYMENT_LABELS, DELIVERY_LABELS };
+export { PAYMENT_LABELS, DELIVERY_LABELS, SHIPPING_DELIVERY_STATUSES, PICKUP_DELIVERY_STATUSES };

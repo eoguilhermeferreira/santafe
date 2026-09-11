@@ -6,7 +6,13 @@ import { toast } from "sonner";
 
 import { updateOrderStatus } from "@/app/admin/(protected)/pedidos/actions";
 import { WhatsAppIcon } from "@/components/icons/whatsapp-icon";
-import { PAYMENT_LABELS, DELIVERY_LABELS } from "@/components/admin/status-badge";
+import {
+  PAYMENT_LABELS,
+  DELIVERY_LABELS,
+  PICKUP_DELIVERY_STATUSES,
+  SHIPPING_DELIVERY_STATUSES,
+} from "@/components/admin/status-badge";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { storeConfig } from "@/config/store";
 import { formatDateTime, formatPrice, onlyDigits } from "@/lib/format";
 import type { DeliveryStatus, OrderWithItems, PaymentStatus } from "@/types/database.types";
 
@@ -28,6 +35,13 @@ export function OrderDetail({ order }: { order: OrderWithItems }) {
   const [isSaving, setIsSaving] = React.useState(false);
 
   const address = order.shipping_address;
+  const isPickup = order.delivery_method === "retirada";
+  const isLocalDelivery =
+    !isPickup &&
+    address.city.trim().toLowerCase() === storeConfig.address.city.toLowerCase() &&
+    address.state.trim().toUpperCase() === storeConfig.address.state;
+  const showTrackingCode = !isPickup && !isLocalDelivery;
+  const deliveryStatusOptions = isPickup ? PICKUP_DELIVERY_STATUSES : SHIPPING_DELIVERY_STATUSES;
 
   async function handleSave() {
     setIsSaving(true);
@@ -97,7 +111,12 @@ export function OrderDetail({ order }: { order: OrderWithItems }) {
           </Card>
 
           <Card className="space-y-2 p-6">
-            <h2 className="font-display text-lg font-semibold">Cliente e entrega</h2>
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="font-display text-lg font-semibold">Cliente e entrega</h2>
+              <Badge variant={isPickup ? "secondary" : "outline"}>
+                {isPickup ? "Retirada na loja" : "Entrega"}
+              </Badge>
+            </div>
             <p className="text-sm">{order.customer_name}</p>
             <p className="text-sm text-muted-foreground">{order.email} · {order.phone}</p>
             <p className="text-sm text-muted-foreground">
@@ -133,18 +152,20 @@ export function OrderDetail({ order }: { order: OrderWithItems }) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(DELIVERY_LABELS).map(([value, { label }]) => (
+                {deliveryStatusOptions.map((value) => (
                   <SelectItem key={value} value={value}>
-                    {label}
+                    {DELIVERY_LABELS[value].label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-          <div>
-            <Label className="mb-1.5 block">Código de rastreio</Label>
-            <Input value={trackingCode} onChange={(e) => setTrackingCode(e.target.value)} />
-          </div>
+          {showTrackingCode && (
+            <div>
+              <Label className="mb-1.5 block">Código de rastreio</Label>
+              <Input value={trackingCode} onChange={(e) => setTrackingCode(e.target.value)} />
+            </div>
+          )}
           <Button onClick={handleSave} disabled={isSaving} className="w-full">
             {isSaving && <Loader2 className="size-4 animate-spin" />}
             Salvar alterações

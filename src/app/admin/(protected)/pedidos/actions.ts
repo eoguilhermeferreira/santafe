@@ -30,7 +30,9 @@ export async function getOrder(id: string): Promise<OrderWithItems | null> {
 
 const updateSchema = z.object({
   payment_status: z.enum(["pendente", "pago", "falhou", "reembolsado"]).optional(),
-  delivery_status: z.enum(["recebido", "preparando", "enviado", "entregue", "cancelado"]).optional(),
+  delivery_status: z
+    .enum(["recebido", "preparando", "enviado", "entregue", "pronto_para_retirar", "cancelado"])
+    .optional(),
   tracking_code: z.string().trim().nullable().optional(),
 });
 

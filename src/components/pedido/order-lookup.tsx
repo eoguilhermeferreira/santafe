@@ -25,6 +25,7 @@ const DELIVERY_STATUS_LABEL: Record<DeliveryStatus, string> = {
   preparando: "Preparando",
   enviado: "Enviado",
   entregue: "Entregue",
+  pronto_para_retirar: "Pronto para retirar na loja",
   cancelado: "Cancelado",
 };
 
