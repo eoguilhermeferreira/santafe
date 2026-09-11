@@ -14,7 +14,7 @@ export function AboutSection() {
           alt="Fachada da loja Santa Fé Artigos Católicos"
           fill
           sizes="(min-width: 640px) 50vw, 100vw"
-          className="object-cover"
+          className="object-cover object-top"
         />
       </div>
       <div className="flex flex-col justify-center gap-3 p-6 sm:p-10">
