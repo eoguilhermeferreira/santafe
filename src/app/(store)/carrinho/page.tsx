@@ -9,11 +9,9 @@ import { BackButton } from "@/components/store/back-button";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { formatPrice } from "@/lib/format";
-import { calculateShipping } from "@/lib/shipping";
 
 export default function CarrinhoPage() {
   const { items, subtotal, setQuantity, removeItem, isHydrated } = useCart();
-  const shipping = calculateShipping();
 
   if (isHydrated && items.length === 0) {
     return (
@@ -108,14 +106,17 @@ export default function CarrinhoPage() {
               <span>{formatPrice(subtotal)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">{shipping.label}</span>
-              <span>{formatPrice(shipping.cost)}</span>
+              <span className="text-muted-foreground">Frete</span>
+              <span className="text-muted-foreground">A calcular</span>
             </div>
           </div>
           <div className="flex justify-between border-t border-border pt-3 font-display text-lg font-semibold">
             <span>Total</span>
-            <span>{formatPrice(subtotal + shipping.cost)}</span>
+            <span>{formatPrice(subtotal)}</span>
           </div>
+          <p className="text-xs text-muted-foreground">
+            O frete é calculado no checkout, com base no seu CEP (ou grátis, se retirar na loja).
+          </p>
           <Button asChild size="lg" className="w-full" disabled={items.length === 0}>
             <Link href="/checkout">Finalizar compra</Link>
           </Button>
