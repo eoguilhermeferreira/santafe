@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { AboutSection } from "@/components/store/about-section";
 import { BannerCarousel } from "@/components/store/banner-carousel";
 import { CategoryGrid } from "@/components/store/category-grid";
 import { FaqAccordion } from "@/components/store/faq-accordion";
@@ -36,6 +37,10 @@ export default async function HomePage() {
       </div>
 
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-14 px-4">
+        <Reveal>
+          <AboutSection />
+        </Reveal>
+
         <Reveal>
           <CategoryGrid categories={categories} />
         </Reveal>
