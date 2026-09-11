@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import * as React from "react";
-import { Loader2, ShoppingBag } from "lucide-react";
+import { Loader2, ShoppingBag, Store, Truck } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -15,11 +15,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { storeConfig } from "@/config/store";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/checkout-schema";
 import { formatCep, formatPrice, onlyDigits } from "@/lib/format";
 import { calculateShipping } from "@/lib/shipping";
 import { fetchAddressByCep } from "@/lib/viacep";
-import type { PaymentMethod } from "@/types/database.types";
+import type { DeliveryMethod, PaymentMethod } from "@/types/database.types";
 import type { ShippingOption } from "@/lib/melhor-envio";
 
 const PAYMENT_OPTIONS: { value: PaymentMethod; label: string }[] = [
@@ -29,9 +30,17 @@ const PAYMENT_OPTIONS: { value: PaymentMethod; label: string }[] = [
   { value: "boleto", label: "Boleto" },
 ];
 
-type FormState = Omit<CheckoutFormValues, "paymentMethod">;
+// Espelha o mesmo id/label/custo usado no servidor (checkout/actions.ts)
+// só pra exibição — quem decide o frete de verdade é sempre o servidor.
+const PICKUP_SHIPPING_OPTION: ShippingOption = {
+  id: "retirada",
+  label: "Retirar na loja (grátis)",
+  cost: 0,
+};
 
-const EMPTY_FORM: FormState = {
+type AddressState = Omit<CheckoutFormValues, "paymentMethod" | "deliveryMethod">;
+
+const EMPTY_FORM: AddressState = {
   customerName: "",
   email: "",
   phone: "",
@@ -47,7 +56,8 @@ const EMPTY_FORM: FormState = {
 export function CheckoutForm() {
   const { items, subtotal, totalWeightGrams, isHydrated } = useCart();
 
-  const [form, setForm] = React.useState<FormState>(EMPTY_FORM);
+  const [form, setForm] = React.useState<AddressState>(EMPTY_FORM);
+  const [deliveryMethod, setDeliveryMethod] = React.useState<DeliveryMethod>("entrega");
   const [paymentMethod, setPaymentMethod] = React.useState<PaymentMethod>("pix");
   const [errors, setErrors] = React.useState<Partial<Record<string, string>>>({});
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -60,9 +70,11 @@ export function CheckoutForm() {
   const [isShippingLoading, setIsShippingLoading] = React.useState(false);
 
   const shipping =
-    shippingOptions.find((option) => option.id === selectedShippingId) ?? shippingOptions[0];
+    deliveryMethod === "retirada"
+      ? PICKUP_SHIPPING_OPTION
+      : (shippingOptions.find((option) => option.id === selectedShippingId) ?? shippingOptions[0]);
 
-  function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
+  function updateField<K extends keyof AddressState>(key: K, value: AddressState[K]) {
     setForm((current) => ({ ...current, [key]: value }));
   }
 
@@ -96,6 +108,7 @@ export function CheckoutForm() {
     const parsed = checkoutSchema.safeParse({
       ...form,
       cep: onlyDigits(form.cep),
+      deliveryMethod,
       paymentMethod,
     });
 
@@ -118,7 +131,7 @@ export function CheckoutForm() {
         quantity: item.quantity,
         variationValue: item.variationValue,
       })),
-      shippingOptionId: selectedShippingId,
+      shippingOptionId: deliveryMethod === "entrega" ? selectedShippingId : undefined,
     });
 
     if (order.error || !order.orderId) {
@@ -178,46 +191,85 @@ export function CheckoutForm() {
           </Card>
 
           <Card className="space-y-4 p-6">
-            <h2 className="font-display text-lg font-semibold">Endereço de entrega</h2>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <Field label="CEP" error={errors.cep}>
-                <Input
-                  value={formatCep(form.cep)}
-                  onChange={(e) => updateField("cep", e.target.value)}
-                  onBlur={handleCepBlur}
-                  inputMode="numeric"
-                />
-              </Field>
-              <Field label="Rua" error={errors.street} className="sm:col-span-2">
-                <Input value={form.street} onChange={(e) => updateField("street", e.target.value)} />
-              </Field>
-              <Field label="Número" error={errors.number}>
-                <Input value={form.number} onChange={(e) => updateField("number", e.target.value)} />
-              </Field>
-              <Field label="Complemento" error={errors.complement}>
-                <Input
-                  value={form.complement}
-                  onChange={(e) => updateField("complement", e.target.value)}
-                />
-              </Field>
-              <Field label="Bairro" error={errors.neighborhood}>
-                <Input
-                  value={form.neighborhood}
-                  onChange={(e) => updateField("neighborhood", e.target.value)}
-                />
-              </Field>
-              <Field label="Cidade" error={errors.city}>
-                <Input value={form.city} onChange={(e) => updateField("city", e.target.value)} />
-              </Field>
-              <Field label="UF" error={errors.state}>
-                <Input
-                  value={form.state}
-                  maxLength={2}
-                  onChange={(e) => updateField("state", e.target.value.toUpperCase())}
-                />
-              </Field>
+            <h2 className="font-display text-lg font-semibold">Como você quer receber?</h2>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setDeliveryMethod("entrega")}
+                className={`flex flex-col items-center gap-1.5 rounded-md border px-3 py-3 text-sm font-medium transition-colors ${
+                  deliveryMethod === "entrega"
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-input hover:bg-secondary"
+                }`}
+              >
+                <Truck className="size-5" />
+                Entrega
+              </button>
+              <button
+                type="button"
+                onClick={() => setDeliveryMethod("retirada")}
+                className={`flex flex-col items-center gap-1.5 rounded-md border px-3 py-3 text-sm font-medium transition-colors ${
+                  deliveryMethod === "retirada"
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-input hover:bg-secondary"
+                }`}
+              >
+                <Store className="size-5" />
+                Retirar na loja
+              </button>
             </div>
+            {deliveryMethod === "retirada" && (
+              <p className="text-sm text-muted-foreground">
+                Sem custo de frete. Retire seu pedido em {storeConfig.address.street},{" "}
+                {storeConfig.address.number} - {storeConfig.address.city}/{storeConfig.address.state},
+                CEP {formatCep(storeConfig.address.cep)}.
+              </p>
+            )}
           </Card>
+
+          {deliveryMethod === "entrega" && (
+            <Card className="space-y-4 p-6">
+              <h2 className="font-display text-lg font-semibold">Endereço de entrega</h2>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <Field label="CEP" error={errors.cep}>
+                  <Input
+                    value={formatCep(form.cep)}
+                    onChange={(e) => updateField("cep", e.target.value)}
+                    onBlur={handleCepBlur}
+                    inputMode="numeric"
+                  />
+                </Field>
+                <Field label="Rua" error={errors.street} className="sm:col-span-2">
+                  <Input value={form.street} onChange={(e) => updateField("street", e.target.value)} />
+                </Field>
+                <Field label="Número" error={errors.number}>
+                  <Input value={form.number} onChange={(e) => updateField("number", e.target.value)} />
+                </Field>
+                <Field label="Complemento" error={errors.complement}>
+                  <Input
+                    value={form.complement}
+                    onChange={(e) => updateField("complement", e.target.value)}
+                  />
+                </Field>
+                <Field label="Bairro" error={errors.neighborhood}>
+                  <Input
+                    value={form.neighborhood}
+                    onChange={(e) => updateField("neighborhood", e.target.value)}
+                  />
+                </Field>
+                <Field label="Cidade" error={errors.city}>
+                  <Input value={form.city} onChange={(e) => updateField("city", e.target.value)} />
+                </Field>
+                <Field label="UF" error={errors.state}>
+                  <Input
+                    value={form.state}
+                    maxLength={2}
+                    onChange={(e) => updateField("state", e.target.value.toUpperCase())}
+                  />
+                </Field>
+              </div>
+            </Card>
+          )}
 
           <Card className="space-y-4 p-6">
             <h2 className="font-display text-lg font-semibold">Forma de pagamento</h2>
@@ -269,7 +321,12 @@ export function CheckoutForm() {
             <span>{formatPrice(subtotal)}</span>
           </div>
 
-          {isShippingLoading ? (
+          {deliveryMethod === "retirada" ? (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Retirar na loja</span>
+              <span>Grátis</span>
+            </div>
+          ) : isShippingLoading ? (
             <div className="flex items-center gap-2 text-muted-foreground">
               <Loader2 className="size-3.5 animate-spin" /> Calculando frete…
             </div>

@@ -9,29 +9,31 @@ import { onlyDigits } from "@/lib/format";
 import { storeConfig } from "@/config/store";
 import { z } from "zod";
 
-/** Retirar na loja: sempre disponível como última opção, sem custo. */
-const PICKUP_OPTION: ShippingOption = {
+/**
+ * Opção de frete usada quando o cliente escolhe retirar na loja — sem
+ * custo, e sem depender de nenhuma cotação por CEP.
+ */
+export const PICKUP_SHIPPING_OPTION: ShippingOption = {
   id: "retirada",
   label: "Retirar na loja (grátis)",
   cost: 0,
 };
 
 /**
- * Opções de frete pra exibir no checkout (o cliente escolhe uma) assim que
- * preenche o CEP. Tenta o Melhor Envio (preço real por CEP/peso, só
+ * Opções de frete por transportadora pra exibir no checkout (o cliente
+ * escolhe uma) assim que preenche o CEP — só chamado quando o cliente
+ * escolheu "Entrega". Tenta o Melhor Envio (preço real por CEP/peso, só
  * Correios/Jadlog/Loggi, até 2 serviços de cada); sem token configurado ou
  * se a cotação falhar/vier vazia, cai pro frete fixo como única opção.
- * Em qualquer caso, "Retirar na loja" sempre aparece por último — nunca é a
- * opção pré-selecionada, o cliente escolhe ela conscientemente.
  */
 export async function getShippingOptions(
   cep: string,
   weightGrams: number
 ): Promise<ShippingOption[]> {
   const options = await getMelhorEnvioOptions({ toCep: cep, weightGrams });
-  if (options.length > 0) return [...options, PICKUP_OPTION];
+  if (options.length > 0) return options;
   const flat = calculateShipping();
-  return [{ id: "flat", label: flat.label, cost: flat.cost }, PICKUP_OPTION];
+  return [{ id: "flat", label: flat.label, cost: flat.cost }];
 }
 
 const createOrderInput = z.object({
@@ -58,17 +60,18 @@ async function upsertCustomerFromCheckout(
   customer: z.infer<typeof checkoutSchema>
 ): Promise<string | null> {
   try {
+    const hasAddress = customer.deliveryMethod === "entrega";
     const customerData = {
       name: customer.customerName,
       email: customer.email,
       phone: onlyDigits(customer.phone),
-      cep: onlyDigits(customer.cep),
-      street: customer.street,
-      address_number: customer.number,
+      cep: hasAddress ? onlyDigits(customer.cep) : null,
+      street: hasAddress ? customer.street : null,
+      address_number: hasAddress ? customer.number : null,
       complement: customer.complement || null,
-      neighborhood: customer.neighborhood,
-      city: customer.city,
-      state: customer.state.toUpperCase(),
+      neighborhood: hasAddress ? customer.neighborhood : null,
+      city: hasAddress ? customer.city : null,
+      state: hasAddress ? customer.state.toUpperCase() : null,
     };
 
     const { data: existing } = await supabase
@@ -169,12 +172,36 @@ export async function createOrder(input: unknown): Promise<CreateOrderResult> {
     });
   }
 
-  const shippingOptions = await getShippingOptions(customer.cep, totalWeightGrams);
-  const shipping =
-    shippingOptions.find((option) => option.id === shippingOptionId) ?? shippingOptions[0];
-  const isPickup = shipping.id === PICKUP_OPTION.id;
+  const isPickup = customer.deliveryMethod === "retirada";
+  let shipping: { id: string; label: string; cost: number } = PICKUP_SHIPPING_OPTION;
+  if (!isPickup) {
+    const shippingOptions = await getShippingOptions(customer.cep, totalWeightGrams);
+    shipping = shippingOptions.find((option) => option.id === shippingOptionId) ?? shippingOptions[0];
+  }
   const total = subtotal + shipping.cost;
   const customerId = await upsertCustomerFromCheckout(supabase, customer);
+
+  // Pra retirada não coletamos endereço do cliente — o "endereço de
+  // entrega" gravado é o da própria loja, já que é lá que o pedido é
+  // retirado.
+  const shippingAddress = isPickup
+    ? {
+        cep: storeConfig.address.cep,
+        street: storeConfig.address.street,
+        number: storeConfig.address.number,
+        neighborhood: "",
+        city: storeConfig.address.city,
+        state: storeConfig.address.state,
+      }
+    : {
+        cep: onlyDigits(customer.cep),
+        street: customer.street,
+        number: customer.number,
+        complement: customer.complement,
+        neighborhood: customer.neighborhood,
+        city: customer.city,
+        state: customer.state.toUpperCase(),
+      };
 
   const { data: order, error: orderError } = await supabase
     .from("orders")
@@ -183,15 +210,7 @@ export async function createOrder(input: unknown): Promise<CreateOrderResult> {
       email: customer.email,
       phone: onlyDigits(customer.phone),
       customer_id: customerId,
-      shipping_address: {
-        cep: onlyDigits(customer.cep),
-        street: customer.street,
-        number: customer.number,
-        complement: customer.complement,
-        neighborhood: customer.neighborhood,
-        city: customer.city,
-        state: customer.state.toUpperCase(),
-      },
+      shipping_address: shippingAddress,
       subtotal,
       shipping_cost: shipping.cost,
       total,

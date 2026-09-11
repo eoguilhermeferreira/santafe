@@ -1,18 +1,45 @@
 import { z } from "zod";
 
-export const checkoutSchema = z.object({
-  customerName: z.string().trim().min(3, "Informe seu nome completo"),
-  email: z.string().trim().email("E-mail inválido"),
-  phone: z.string().trim().min(10, "Informe um telefone com DDD"),
-  cep: z.string().trim().length(8, "CEP inválido"),
-  street: z.string().trim().min(2, "Informe a rua"),
-  number: z.string().trim().min(1, "Informe o número"),
-  complement: z.string().trim().optional(),
-  neighborhood: z.string().trim().min(2, "Informe o bairro"),
-  city: z.string().trim().min(2, "Informe a cidade"),
-  state: z.string().trim().length(2, "UF inválida"),
-  paymentMethod: z.enum(["pix", "cartao_credito", "cartao_debito", "boleto"]),
-});
+/**
+ * Endereço só é obrigatório quando o cliente escolhe entrega — quem
+ * retira na loja não precisa preencher nada disso.
+ */
+export const checkoutSchema = z
+  .object({
+    customerName: z.string().trim().min(3, "Informe seu nome completo"),
+    email: z.string().trim().email("E-mail inválido"),
+    phone: z.string().trim().min(10, "Informe um telefone com DDD"),
+    deliveryMethod: z.enum(["entrega", "retirada"]),
+    cep: z.string().trim().default(""),
+    street: z.string().trim().default(""),
+    number: z.string().trim().default(""),
+    complement: z.string().trim().optional(),
+    neighborhood: z.string().trim().default(""),
+    city: z.string().trim().default(""),
+    state: z.string().trim().default(""),
+    paymentMethod: z.enum(["pix", "cartao_credito", "cartao_debito", "boleto"]),
+  })
+  .superRefine((data, ctx) => {
+    if (data.deliveryMethod !== "entrega") return;
+    if (data.cep.length !== 8) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["cep"], message: "CEP inválido" });
+    }
+    if (data.street.length < 2) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["street"], message: "Informe a rua" });
+    }
+    if (data.number.length < 1) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["number"], message: "Informe o número" });
+    }
+    if (data.neighborhood.length < 2) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["neighborhood"], message: "Informe o bairro" });
+    }
+    if (data.city.length < 2) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["city"], message: "Informe a cidade" });
+    }
+    if (data.state.length !== 2) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["state"], message: "UF inválida" });
+    }
+  });
 
 export type CheckoutFormValues = z.infer<typeof checkoutSchema>;
 
