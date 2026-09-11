@@ -8,13 +8,13 @@ import Image from "next/image";
 export function AboutSection() {
   return (
     <div className="grid gap-6 overflow-hidden rounded-2xl border border-border bg-card sm:grid-cols-2 sm:gap-0">
-      <div className="relative aspect-[4/3] bg-muted sm:aspect-auto sm:min-h-[420px]">
+      <div className="relative aspect-[3/4] bg-muted">
         <Image
           src="/images/fachada-loja.jpg"
           alt="Fachada da loja Santa Fé Artigos Católicos"
           fill
           sizes="(min-width: 640px) 50vw, 100vw"
-          className="object-contain"
+          className="object-cover"
         />
       </div>
       <div className="flex flex-col justify-center gap-3 p-6 sm:p-10">
