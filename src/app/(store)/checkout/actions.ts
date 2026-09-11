@@ -11,9 +11,10 @@ import { z } from "zod";
 
 /**
  * Opção de frete usada quando o cliente escolhe retirar na loja — sem
- * custo, e sem depender de nenhuma cotação por CEP.
+ * custo, e sem depender de nenhuma cotação por CEP. Não pode ser
+ * exportada (arquivo "use server" só pode exportar funções async).
  */
-export const PICKUP_SHIPPING_OPTION: ShippingOption = {
+const PICKUP_SHIPPING_OPTION: ShippingOption = {
   id: "retirada",
   label: "Retirar na loja (grátis)",
   cost: 0,

@@ -18,7 +18,6 @@ import { Label } from "@/components/ui/label";
 import { storeConfig } from "@/config/store";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/checkout-schema";
 import { formatCep, formatPrice, onlyDigits } from "@/lib/format";
-import { calculateShipping } from "@/lib/shipping";
 import { fetchAddressByCep } from "@/lib/viacep";
 import type { DeliveryMethod, PaymentMethod } from "@/types/database.types";
 import type { ShippingOption } from "@/lib/melhor-envio";
@@ -62,11 +61,8 @@ export function CheckoutForm() {
   const [errors, setErrors] = React.useState<Partial<Record<string, string>>>({});
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  const flatShipping = calculateShipping();
-  const [shippingOptions, setShippingOptions] = React.useState<ShippingOption[]>([
-    { id: "flat", label: flatShipping.label, cost: flatShipping.cost },
-  ]);
-  const [selectedShippingId, setSelectedShippingId] = React.useState("flat");
+  const [shippingOptions, setShippingOptions] = React.useState<ShippingOption[]>([]);
+  const [selectedShippingId, setSelectedShippingId] = React.useState("");
   const [isShippingLoading, setIsShippingLoading] = React.useState(false);
 
   const shipping =
@@ -96,7 +92,7 @@ export function CheckoutForm() {
       setIsShippingLoading(true);
       const options = await getShippingOptions(digits, totalWeightGrams);
       setShippingOptions(options);
-      setSelectedShippingId(options[0]?.id ?? "flat");
+      setSelectedShippingId(options[0]?.id ?? "");
       setIsShippingLoading(false);
     }
   }
@@ -330,6 +326,11 @@ export function CheckoutForm() {
             <div className="flex items-center gap-2 text-muted-foreground">
               <Loader2 className="size-3.5 animate-spin" /> Calculando frete…
             </div>
+          ) : shippingOptions.length === 0 ? (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Frete</span>
+              <span className="text-muted-foreground">A calcular</span>
+            </div>
           ) : shippingOptions.length > 1 ? (
             <div className="space-y-1.5">
               <span className="text-xs font-medium text-muted-foreground">
@@ -359,20 +360,22 @@ export function CheckoutForm() {
               ))}
             </div>
           ) : (
-            <>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">{shipping.label}</span>
-                <span>{formatPrice(shipping.cost)}</span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Valor final do frete confirmado ao preencher o CEP.
-              </p>
-            </>
+            shipping && (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">{shipping.label}</span>
+                  <span>{formatPrice(shipping.cost)}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Valor final do frete confirmado ao preencher o CEP.
+                </p>
+              </>
+            )
           )}
         </div>
         <div className="flex justify-between border-t border-border pt-3 font-display text-lg font-semibold">
           <span>Total</span>
-          <span>{formatPrice(subtotal + shipping.cost)}</span>
+          <span>{formatPrice(subtotal + (shipping?.cost ?? 0))}</span>
         </div>
       </Card>
     </div>

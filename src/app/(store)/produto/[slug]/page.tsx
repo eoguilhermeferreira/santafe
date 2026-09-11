@@ -5,6 +5,7 @@ import { AddToCart } from "@/components/store/add-to-cart";
 import { BackButton } from "@/components/store/back-button";
 import { ProductCard } from "@/components/store/product-card";
 import { ProductGallery } from "@/components/store/product-gallery";
+import { ShippingCalculator } from "@/components/store/shipping-calculator";
 import { Badge } from "@/components/ui/badge";
 import { discountPercent, formatPrice } from "@/lib/format";
 import { getProductBySlug, getRelatedProducts } from "@/lib/queries";
@@ -77,6 +78,8 @@ export default async function ProdutoPage({
           </div>
 
           <AddToCart product={product} />
+
+          <ShippingCalculator weightGrams={product.weight_grams} />
 
           {product.description && (
             <div className="mt-4 space-y-2 border-t border-border pt-4">
