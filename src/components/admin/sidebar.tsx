@@ -9,6 +9,7 @@ import {
   Tags,
   GalleryHorizontal,
   ClipboardList,
+  Star,
   Users,
   LogOut,
 } from "lucide-react";
@@ -23,6 +24,7 @@ const NAV_ITEMS = [
   { href: "/admin/categorias", label: "Categorias", icon: Tags },
   { href: "/admin/banners", label: "Banners", icon: GalleryHorizontal },
   { href: "/admin/pedidos", label: "Pedidos", icon: ClipboardList },
+  { href: "/admin/avaliacoes", label: "Avaliações", icon: Star },
   { href: "/admin/clientes", label: "Clientes", icon: Users },
 ];
 

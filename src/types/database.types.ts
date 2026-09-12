@@ -16,6 +16,7 @@ export type DeliveryStatus =
   | "pronto_para_retirar"
   | "cancelado";
 export type DeliveryMethod = "entrega" | "retirada";
+export type ReviewStatus = "pendente" | "publicada" | "oculta";
 
 export interface Database {
   public: {
@@ -263,6 +264,55 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["admin_profiles"]["Insert"]>;
         Relationships: [];
       };
+      reviews: {
+        Row: {
+          id: string;
+          product_id: string;
+          order_id: string;
+          order_item_id: string;
+          customer_name: string;
+          email: string;
+          rating: number;
+          comment: string | null;
+          photo_urls: string[];
+          video_url: string | null;
+          status: ReviewStatus;
+          verified_purchase: boolean;
+          created_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["reviews"]["Row"], "id" | "created_at">> & {
+          product_id: string;
+          order_id: string;
+          order_item_id: string;
+          customer_name: string;
+          email: string;
+          rating: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["reviews"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "reviews_product_id_fkey";
+            columns: ["product_id"];
+            isOneToOne: false;
+            referencedRelation: "products";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "reviews_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "reviews_order_item_id_fkey";
+            columns: ["order_item_id"];
+            isOneToOne: true;
+            referencedRelation: "order_items";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -272,6 +322,7 @@ export interface Database {
       payment_status: PaymentStatus;
       delivery_status: DeliveryStatus;
       delivery_method: DeliveryMethod;
+      review_status: ReviewStatus;
     };
     CompositeTypes: Record<string, never>;
   };
@@ -296,6 +347,7 @@ export type Customer = Database["public"]["Tables"]["customers"]["Row"];
 export type Order = Database["public"]["Tables"]["orders"]["Row"];
 export type OrderItem = Database["public"]["Tables"]["order_items"]["Row"];
 export type AdminProfile = Database["public"]["Tables"]["admin_profiles"]["Row"];
+export type Review = Database["public"]["Tables"]["reviews"]["Row"];
 
 export type ProductWithRelations = Product & {
   product_images: ProductImage[];

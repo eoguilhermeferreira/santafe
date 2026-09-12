@@ -6,10 +6,13 @@ import { toast } from "sonner";
 
 import { createCheckoutPreference } from "@/app/(store)/checkout/actions";
 import { lookupOrder, type OrderLookupResult } from "@/app/(store)/pedido/actions";
+import { ReviewDialog } from "@/components/pedido/review-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { StarRating } from "@/components/ui/star-rating";
 import { formatDateTime, formatPrice } from "@/lib/format";
 import type { DeliveryStatus, PaymentStatus } from "@/types/database.types";
 
@@ -57,7 +60,23 @@ export function OrderLookup({ initialOrderNumber }: { initialOrderNumber?: strin
     window.location.href = preference.initPoint;
   }
 
+  function handleReviewSubmitted(orderItemId: string, review: NonNullable<OrderLookupResult["order"]>["items"][number]["review"]) {
+    setResult((current) => {
+      if (!current?.order) return current;
+      return {
+        order: {
+          ...current.order,
+          items: current.order.items.map((item) =>
+            item.orderItemId === orderItemId ? { ...item, review } : item
+          ),
+        },
+      };
+    });
+  }
+
   const order = result?.order;
+  const pendingReviewCount =
+    order?.items.filter((item) => item.productId && !item.review).length ?? 0;
 
   return (
     <div className="mt-6 space-y-6">
@@ -103,14 +122,52 @@ export function OrderLookup({ initialOrderNumber }: { initialOrderNumber?: strin
             Feito em {formatDateTime(order.createdAt)} — {DELIVERY_STATUS_LABEL[order.deliveryStatus]}
           </p>
 
-          <ul className="space-y-1.5 border-t border-border pt-3 text-sm">
-            {order.items.map((item, index) => (
-              <li key={index} className="flex justify-between gap-2">
-                <span className="text-muted-foreground">
-                  {item.quantity}x {item.productName}
-                  {item.variationValue ? ` (${item.variationValue})` : ""}
-                </span>
-                <span>{formatPrice(item.unitPrice * item.quantity)}</span>
+          {order.canReview && pendingReviewCount > 0 && (
+            <div className="rounded-lg border border-accent/30 bg-accent/10 p-3 text-sm">
+              <p className="font-medium">Pedido entregue! 🎉</p>
+              <p className="text-muted-foreground">
+                Esperamos que você tenha gostado da sua compra. Conte pra gente como foi sua
+                experiência avaliando os produtos abaixo.
+              </p>
+            </div>
+          )}
+
+          <ul className="space-y-3 border-t border-border pt-3 text-sm">
+            {order.items.map((item) => (
+              <li key={item.orderItemId} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex justify-between gap-2 sm:block">
+                  <span className="text-muted-foreground">
+                    {item.quantity}x {item.productName}
+                    {item.variationValue ? ` (${item.variationValue})` : ""}
+                  </span>
+                  <span className="sm:hidden">{formatPrice(item.unitPrice * item.quantity)}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="hidden sm:inline">{formatPrice(item.unitPrice * item.quantity)}</span>
+                  {order.canReview && item.productId && (
+                    <>
+                      {item.review ? (
+                        item.review.status === "pendente" ? (
+                          <Badge variant="secondary">Avaliação em análise</Badge>
+                        ) : (
+                          <div className="flex items-center gap-1.5">
+                            <StarRating value={item.review.rating} size="sm" />
+                            <Badge variant="success">Avaliado</Badge>
+                          </div>
+                        )
+                      ) : (
+                        <ReviewDialog
+                          orderNumber={order.orderNumber}
+                          email={email}
+                          orderItemId={item.orderItemId}
+                          productName={item.productName}
+                          productImage={item.productImage}
+                          onSubmitted={(review) => handleReviewSubmitted(item.orderItemId, review)}
+                        />
+                      )}
+                    </>
+                  )}
+                </div>
               </li>
             ))}
           </ul>

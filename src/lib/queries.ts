@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/public";
-import type { Category, HomeSection, ProductWithRelations } from "@/types/database.types";
+import type { Category, HomeSection, ProductWithRelations, Review } from "@/types/database.types";
 
 const PRODUCT_SELECT = `
   *,
@@ -122,6 +122,35 @@ export async function getProductBySlug(slug: string): Promise<ProductWithRelatio
   if (error) throw error;
   if (!data) return null;
   return sortImages(data as unknown as ProductWithRelations);
+}
+
+export interface ProductReviewsData {
+  reviews: Review[];
+  average: number;
+  total: number;
+  distribution: Record<1 | 2 | 3 | 4 | 5, number>;
+}
+
+export async function getProductReviews(productId: string): Promise<ProductReviewsData> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("*")
+    .eq("product_id", productId)
+    .eq("status", "publicada")
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+
+  const reviews = data ?? [];
+  const total = reviews.length;
+  const average = total > 0 ? reviews.reduce((sum, review) => sum + review.rating, 0) / total : 0;
+  const distribution: ProductReviewsData["distribution"] = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  for (const review of reviews) {
+    distribution[review.rating as 1 | 2 | 3 | 4 | 5]++;
+  }
+
+  return { reviews, average, total, distribution };
 }
 
 export async function getRelatedProducts(

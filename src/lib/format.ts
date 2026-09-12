@@ -23,6 +23,12 @@ export function formatDateTime(value: string | Date): string {
   return dateFormatter.format(new Date(value));
 }
 
+const dateOnlyFormatter = new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" });
+
+export function formatDate(value: string | Date): string {
+  return dateOnlyFormatter.format(new Date(value));
+}
+
 export function formatCep(value: string): string {
   const digits = value.replace(/\D/g, "").slice(0, 8);
   return digits.length > 5 ? `${digits.slice(0, 5)}-${digits.slice(5)}` : digits;

@@ -5,10 +5,12 @@ import { AddToCart } from "@/components/store/add-to-cart";
 import { BackButton } from "@/components/store/back-button";
 import { ProductCard } from "@/components/store/product-card";
 import { ProductGallery } from "@/components/store/product-gallery";
+import { ReviewsSection } from "@/components/store/reviews-section";
 import { ShippingCalculator } from "@/components/store/shipping-calculator";
 import { Badge } from "@/components/ui/badge";
+import { StarRating } from "@/components/ui/star-rating";
 import { discountPercent, formatPrice } from "@/lib/format";
-import { getProductBySlug, getRelatedProducts } from "@/lib/queries";
+import { getProductBySlug, getProductReviews, getRelatedProducts } from "@/lib/queries";
 
 export async function generateMetadata({
   params,
@@ -30,6 +32,7 @@ export default async function ProdutoPage({
   if (!product) notFound();
 
   const related = await getRelatedProducts(product.category_id, product.id);
+  const reviews = await getProductReviews(product.id);
   const discount = discountPercent(product.price, product.promo_price);
 
   return (
@@ -58,6 +61,14 @@ export default async function ProdutoPage({
 
         <div className="flex flex-col gap-4">
           <h1 className="font-display text-2xl font-semibold sm:text-3xl">{product.name}</h1>
+
+          {reviews.total > 0 && (
+            <a href="#avaliacoes" className="flex items-center gap-2 text-sm">
+              <StarRating value={reviews.average} size="sm" />
+              <span className="font-medium">{reviews.average.toFixed(1)}</span>
+              <span className="text-muted-foreground">({reviews.total} avaliações)</span>
+            </a>
+          )}
 
           <div className="flex items-center gap-3">
             {product.promo_price ? (
@@ -90,6 +101,10 @@ export default async function ProdutoPage({
             </div>
           )}
         </div>
+      </div>
+
+      <div id="avaliacoes">
+        <ReviewsSection data={reviews} />
       </div>
 
       {related.length > 0 && (
