@@ -5,7 +5,11 @@ import * as React from "react";
 import { Loader2, Star as StarIcon, X } from "lucide-react";
 import { toast } from "sonner";
 
-import { submitReview, type OrderLookupReview } from "@/app/(store)/pedido/actions";
+import {
+  createReviewUploadUrls,
+  submitReview,
+  type OrderLookupReview,
+} from "@/app/(store)/pedido/actions";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,6 +22,7 @@ import {
 import { StarRating } from "@/components/ui/star-rating";
 import { Textarea } from "@/components/ui/textarea";
 import { REVIEW_LIMITS } from "@/lib/reviews";
+import { createClient } from "@/lib/supabase/client";
 
 export function ReviewDialog({
   orderNumber,
@@ -115,16 +120,63 @@ export function ReviewDialog({
     }
 
     setIsSubmitting(true);
-    const formData = new FormData();
-    formData.set("orderNumber", String(orderNumber));
-    formData.set("email", email);
-    formData.set("orderItemId", orderItemId);
-    formData.set("rating", String(rating));
-    formData.set("comment", comment);
-    photos.forEach((file) => formData.append("photos", file));
-    if (video) formData.set("video", video);
 
-    const result = await submitReview(formData);
+    const prepared = await createReviewUploadUrls({
+      orderNumber,
+      email,
+      orderItemId,
+      photos: photos.map((file) => ({ size: file.size, type: file.type })),
+      video: video ? { size: video.size, type: video.type } : null,
+    });
+
+    if (prepared.error || !prepared.photoSlots) {
+      setIsSubmitting(false);
+      toast.error(prepared.error ?? "Não foi possível preparar o envio.");
+      return;
+    }
+
+    // Upload direto pro Supabase Storage — os arquivos não passam pelo
+    // servidor da loja, então não travam nem esbarram em limite de tamanho
+    // de requisição.
+    const supabase = createClient();
+    const photoPaths: string[] = [];
+    for (let i = 0; i < photos.length; i++) {
+      const slot = prepared.photoSlots[i];
+      const { error } = await supabase.storage
+        .from("reviews")
+        .uploadToSignedUrl(slot.path, slot.token, photos[i], { contentType: photos[i].type });
+      if (error) {
+        setIsSubmitting(false);
+        toast.error("Falha ao enviar as fotos. Tente novamente.");
+        return;
+      }
+      photoPaths.push(slot.path);
+    }
+
+    let videoPath: string | null = null;
+    if (video && prepared.videoSlot) {
+      const { error } = await supabase.storage
+        .from("reviews")
+        .uploadToSignedUrl(prepared.videoSlot.path, prepared.videoSlot.token, video, {
+          contentType: video.type,
+        });
+      if (error) {
+        setIsSubmitting(false);
+        toast.error("Falha ao enviar o vídeo. Tente novamente.");
+        return;
+      }
+      videoPath = prepared.videoSlot.path;
+    }
+
+    const result = await submitReview({
+      orderNumber,
+      email,
+      orderItemId,
+      rating,
+      comment,
+      photoPaths,
+      videoPath,
+    });
     setIsSubmitting(false);
 
     if (result.error || !result.review) {
