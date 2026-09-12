@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import * as React from "react";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -26,6 +27,7 @@ import type { OrderWithItems } from "@/types/database.types";
 const POLL_INTERVAL_MS = 8000;
 
 export function OrderList({ initialOrders }: { initialOrders: OrderWithItems[] }) {
+  const router = useRouter();
   const [orders, setOrders] = React.useState(initialOrders);
   const [, startTransition] = React.useTransition();
 
@@ -67,11 +69,16 @@ export function OrderList({ initialOrders }: { initialOrders: OrderWithItems[] }
         </TableHeader>
         <TableBody>
           {orders.map((order) => (
-            <TableRow key={order.id} className="cursor-pointer">
+            <TableRow
+              key={order.id}
+              className="cursor-pointer"
+              onClick={() => router.push(`/admin/pedidos/${order.id}`)}
+            >
               <TableCell className="p-0">
                 <Link
                   href={`/admin/pedidos/${order.id}`}
                   className="block px-3 py-3 font-medium"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   #{order.order_number}
                 </Link>

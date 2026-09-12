@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { DeliveryStatusBadge, PaymentStatusBadge } from "@/components/admin/status-badge";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +11,8 @@ import { formatDateTime, formatPrice } from "@/lib/format";
 import type { OrderWithItems } from "@/types/database.types";
 
 export function RecentOrders({ orders }: { orders: OrderWithItems[] }) {
+  const router = useRouter();
+
   return (
     <Card className="p-6">
       <div className="mb-4 flex items-center justify-between">
@@ -30,9 +35,17 @@ export function RecentOrders({ orders }: { orders: OrderWithItems[] }) {
         </TableHeader>
         <TableBody>
           {orders.map((order) => (
-            <TableRow key={order.id} className="cursor-pointer">
+            <TableRow
+              key={order.id}
+              className="cursor-pointer"
+              onClick={() => router.push(`/admin/pedidos/${order.id}`)}
+            >
               <TableCell className="p-0">
-                <Link href={`/admin/pedidos/${order.id}`} className="block px-3 py-3 font-medium">
+                <Link
+                  href={`/admin/pedidos/${order.id}`}
+                  className="block px-3 py-3 font-medium"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   #{order.order_number}
                 </Link>
               </TableCell>
