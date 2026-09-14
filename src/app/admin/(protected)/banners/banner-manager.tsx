@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import type { Banner, Category } from "@/types/database.types";
@@ -136,7 +136,7 @@ export function BannerManager({
                       <SelectItem value="/">Página inicial</SelectItem>
                       <SelectItem value="/produtos">Todos os produtos</SelectItem>
                       {categories.length > 0 && (
-                        <>
+                        <SelectGroup>
                           <SelectSeparator />
                           <SelectLabel>Categorias</SelectLabel>
                           {categories.map((category) => (
@@ -144,7 +144,7 @@ export function BannerManager({
                               {category.name}
                             </SelectItem>
                           ))}
-                        </>
+                        </SelectGroup>
                       )}
                     </SelectContent>
                   </Select>
