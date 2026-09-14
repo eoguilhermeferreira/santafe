@@ -29,20 +29,31 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import type { Banner } from "@/types/database.types";
+import type { Banner, Category } from "@/types/database.types";
 
-export function BannerManager({ banners }: { banners: Banner[] }) {
+const NO_LINK = "none";
+
+export function BannerManager({
+  banners,
+  categories,
+}: {
+  banners: Banner[];
+  categories: Pick<Category, "id" | "name" | "slug">[];
+}) {
   const [editing, setEditing] = React.useState<Banner | null>(null);
   const [open, setOpen] = React.useState(false);
   const [imageUrl, setImageUrl] = React.useState<string | null>(null);
+  const [buttonLink, setButtonLink] = React.useState("");
   const [isActive, setIsActive] = React.useState(true);
   const [isPending, startTransition] = React.useTransition();
 
   function openCreate() {
     setEditing(null);
     setImageUrl(null);
+    setButtonLink("");
     setIsActive(true);
     setOpen(true);
   }
@@ -50,6 +61,7 @@ export function BannerManager({ banners }: { banners: Banner[] }) {
   function openEdit(banner: Banner) {
     setEditing(banner);
     setImageUrl(banner.image_url);
+    setButtonLink(banner.button_link ?? "");
     setIsActive(banner.is_active);
     setOpen(true);
   }
@@ -111,7 +123,31 @@ export function BannerManager({ banners }: { banners: Banner[] }) {
                 </div>
                 <div>
                   <Label className="mb-1.5 block">Link do botão</Label>
-                  <Input name="button_link" defaultValue={editing?.button_link ?? ""} />
+                  <input type="hidden" name="button_link" value={buttonLink} />
+                  <Select
+                    value={buttonLink || NO_LINK}
+                    onValueChange={(value) => setButtonLink(value === NO_LINK ? "" : value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pra onde o botão leva" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={NO_LINK}>Sem link</SelectItem>
+                      <SelectItem value="/">Página inicial</SelectItem>
+                      <SelectItem value="/produtos">Todos os produtos</SelectItem>
+                      {categories.length > 0 && (
+                        <>
+                          <SelectSeparator />
+                          <SelectLabel>Categorias</SelectLabel>
+                          {categories.map((category) => (
+                            <SelectItem key={category.id} value={`/categoria/${category.slug}`}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </>
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div>
