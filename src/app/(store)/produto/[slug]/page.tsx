@@ -11,6 +11,9 @@ import { Badge } from "@/components/ui/badge";
 import { StarRating } from "@/components/ui/star-rating";
 import { discountPercent, formatPrice } from "@/lib/format";
 import { getProductBySlug, getProductReviews, getRelatedProducts } from "@/lib/queries";
+import { withTimeout } from "@/lib/with-timeout";
+
+const EMPTY_REVIEWS = { reviews: [], average: 0, total: 0, distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } };
 
 export async function generateMetadata({
   params,
@@ -31,8 +34,13 @@ export default async function ProdutoPage({
   const product = await getProductBySlug(slug);
   if (!product) notFound();
 
-  const related = await getRelatedProducts(product.category_id, product.id);
-  const reviews = await getProductReviews(product.id);
+  // Produto em si é essencial (sem ele não tem página); relacionados e
+  // avaliações não são — corre em paralelo e, se o Supabase estiver lento,
+  // renderiza sem essa seção em vez de derrubar a página inteira.
+  const [related, reviews] = await Promise.all([
+    withTimeout(getRelatedProducts(product.category_id, product.id), 6000, []),
+    withTimeout(getProductReviews(product.id), 6000, EMPTY_REVIEWS),
+  ]);
   const discount = discountPercent(product.price, product.promo_price);
 
   return (

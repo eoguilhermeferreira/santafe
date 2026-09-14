@@ -15,19 +15,25 @@ import {
   getProducts,
   getProductsByHomeSection,
 } from "@/lib/queries";
+import { withTimeout } from "@/lib/with-timeout";
 
 const HIGHLIGHT_FAQ_ITEMS = FAQ_ITEMS.filter((item) => item.highlight);
 
+const EMPTY_PRODUCTS = { products: [], total: 0 };
+
 export default async function HomePage() {
+  // Teto de 6s por consulta — se o Supabase estiver lento, a home renderiza
+  // com essa seção vazia em vez de a página inteira estourar o timeout da
+  // Vercel e cair com "Gateway Timeout".
   const [banners, categories, maisVendidos, novidades, ofertas, imagens, tercos] =
     await Promise.all([
-      getActiveBanners(),
-      getCategories(),
-      getProductsByHomeSection("mais_vendidos"),
-      getProductsByHomeSection("novidades"),
-      getProductsByHomeSection("ofertas"),
-      getProducts({ categorySlug: "imagens", pageSize: 8 }),
-      getProducts({ categorySlug: "tercos", pageSize: 8 }),
+      withTimeout(getActiveBanners(), 6000, []),
+      withTimeout(getCategories(), 6000, []),
+      withTimeout(getProductsByHomeSection("mais_vendidos"), 6000, []),
+      withTimeout(getProductsByHomeSection("novidades"), 6000, []),
+      withTimeout(getProductsByHomeSection("ofertas"), 6000, []),
+      withTimeout(getProducts({ categorySlug: "imagens", pageSize: 8 }), 6000, EMPTY_PRODUCTS),
+      withTimeout(getProducts({ categorySlug: "tercos", pageSize: 8 }), 6000, EMPTY_PRODUCTS),
     ]);
 
   return (
