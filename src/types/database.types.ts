@@ -62,6 +62,7 @@ export interface Database {
           weight_grams: number;
           is_active: boolean;
           home_section: HomeSection | null;
+          barcode: string | null;
           created_at: string;
           updated_at: string;
         };

@@ -3,10 +3,14 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { Loader2, Plus, Trash2, Upload } from "lucide-react";
+import { Barcode, Loader2, Plus, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 
-import type { ProductActionResult, ProductFormInput } from "@/app/admin/(protected)/produtos/actions";
+import {
+  getProductByBarcode,
+  type ProductActionResult,
+  type ProductFormInput,
+} from "@/app/admin/(protected)/produtos/actions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -38,6 +42,8 @@ export function ProductForm({
   onSave: (input: ProductFormInput) => Promise<ProductActionResult>;
 }) {
   const router = useRouter();
+  const [barcode, setBarcode] = React.useState(product?.barcode ?? "");
+  const [isLookingUpBarcode, setIsLookingUpBarcode] = React.useState(false);
   const [name, setName] = React.useState(product?.name ?? "");
   const [description, setDescription] = React.useState(product?.description ?? "");
   const [categoryId, setCategoryId] = React.useState(product?.category_id ?? "__none__");
@@ -94,6 +100,45 @@ export function ProductForm({
     if (event.dataTransfer.files.length) handleAddImages(event.dataTransfer.files);
   }
 
+  /**
+   * Disparado ao ler o código de barras (a leitora funciona como um teclado:
+   * digita o código e manda Enter) ou ao apertar "Buscar". Se o código já
+   * pertence a um produto cadastrado, reconhece na hora: em "Novo produto"
+   * abre esse produto pra editar/repor estoque em vez de deixar duplicar; em
+   * edição, só avisa se o código já for de OUTRO produto.
+   */
+  async function handleBarcodeLookup() {
+    const trimmed = barcode.trim();
+    if (!trimmed) return;
+
+    setIsLookingUpBarcode(true);
+    let found: Awaited<ReturnType<typeof getProductByBarcode>>;
+    try {
+      found = await getProductByBarcode(trimmed);
+    } catch (error) {
+      console.error(error);
+      setIsLookingUpBarcode(false);
+      toast.error("Não foi possível verificar o código agora. Tente de novo.");
+      return;
+    }
+    setIsLookingUpBarcode(false);
+
+    if (!found) {
+      toast.success("Código novo — preenche o resto e salva pra cadastrar.");
+      return;
+    }
+
+    if (found.id === product?.id) return;
+
+    if (!product) {
+      toast.info(`Esse código já é do produto "${found.name}" — abrindo pra editar.`);
+      router.push(`/admin/produtos/${found.id}`);
+      return;
+    }
+
+    toast.error(`Esse código de barras já está cadastrado em "${found.name}".`);
+  }
+
   function addVariationRow() {
     setVariations((current) => [...current, { label: "Tamanho", value: "", stock: 0 }]);
   }
@@ -115,6 +160,7 @@ export function ProductForm({
     setIsSaving(true);
     const result = await onSave({
       name: name.trim(),
+      barcode: barcode.trim() || null,
       description: description.trim() || null,
       category_id: categoryId === "__none__" ? null : categoryId,
       price: Number(price),
@@ -145,6 +191,33 @@ export function ProductForm({
       <Card className="space-y-4 p-6">
         <h2 className="font-display text-lg font-semibold">Informações do produto</h2>
         <div className="grid gap-4 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <Label className="mb-1.5 block">Código de barras (opcional)</Label>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Barcode className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={barcode}
+                  onChange={(e) => setBarcode(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key !== "Enter") return;
+                    e.preventDefault();
+                    handleBarcodeLookup();
+                  }}
+                  placeholder="Escaneie com o leitor ou digite o código"
+                  className="pl-9"
+                />
+              </div>
+              <Button type="button" variant="outline" onClick={handleBarcodeLookup} disabled={isLookingUpBarcode}>
+                {isLookingUpBarcode && <Loader2 className="size-4 animate-spin" />}
+                Buscar
+              </Button>
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Lendo com o leitor de código de barras, ele já reconhece se o produto já estiver
+              cadastrado (abre pra editar) ou avisa que é um código novo.
+            </p>
+          </div>
           <div className="sm:col-span-2">
             <Label className="mb-1.5 block">Nome</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} required />

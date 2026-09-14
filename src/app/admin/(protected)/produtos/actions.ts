@@ -16,6 +16,7 @@ const productFormSchema = z.object({
   weight_grams: z.number().int().positive(),
   is_active: z.boolean(),
   home_section: z.enum(["mais_vendidos", "novidades", "ofertas"]).nullable(),
+  barcode: z.string().trim().nullable(),
   images: z.array(z.object({ url: z.string().min(1) })),
   variations: z.array(
     z.object({
@@ -31,6 +32,37 @@ export type ProductFormInput = z.infer<typeof productFormSchema>;
 export interface ProductActionResult {
   id?: string;
   error?: string;
+}
+
+/** Código 23505 do Postgres = violação de unicidade (aqui, sempre o barcode). */
+function friendlyError(error: { code?: string; message: string }): string {
+  if (error.code === "23505") return "Esse código de barras já está cadastrado em outro produto.";
+  return error.message;
+}
+
+export interface ProductByBarcode {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+/**
+ * Reconhece um produto já cadastrado pelo código de barras lido no leitor —
+ * usado na tela de novo produto pra abrir direto o produto existente em vez
+ * de deixar cadastrar duplicado.
+ */
+export async function getProductByBarcode(barcode: string): Promise<ProductByBarcode | null> {
+  const trimmed = barcode.trim();
+  if (!trimmed) return null;
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("products")
+    .select("id, name, slug")
+    .eq("barcode", trimmed)
+    .maybeSingle();
+
+  return data;
 }
 
 async function saveRelations(
@@ -73,7 +105,9 @@ export async function createProduct(input: ProductFormInput): Promise<ProductAct
     .select("id")
     .single();
 
-  if (error || !data) return { error: error?.message ?? "Não foi possível criar o produto." };
+  if (error || !data) {
+    return { error: error ? friendlyError(error) : "Não foi possível criar o produto." };
+  }
 
   try {
     await saveRelations(supabase, data.id, images, variations);
@@ -98,7 +132,7 @@ export async function updateProduct(id: string, input: ProductFormInput): Promis
     .update({ ...product, slug: slugify(product.name) })
     .eq("id", id);
 
-  if (error) return { error: error.message };
+  if (error) return { error: friendlyError(error) };
 
   try {
     await saveRelations(supabase, id, images, variations);
