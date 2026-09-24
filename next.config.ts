@@ -6,6 +6,15 @@ const supabaseHostname = process.env.NEXT_PUBLIC_SUPABASE_URL
 
 const nextConfig: NextConfig = {
   images: {
+    // A Vercel cobra/limita a Otimização de Imagem por quantidade de imagens
+    // de origem distintas processadas por mês (plano Hobby tem uma cota
+    // mensal). Com centenas de produtos, cada um com várias fotos, a loja
+    // estourou essa cota — por isso fotos "novas" (produtos/tamanhos ainda
+    // não vistos antes) apareciam quebradas, enquanto miniaturas já vistas
+    // antes (já em cache) continuavam funcionando. Desligando a otimização:
+    // as imagens do Supabase Storage (já JPEG de ~150-200KB, tamanho ok)
+    // passam a carregar direto, sem depender dessa cota.
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",
