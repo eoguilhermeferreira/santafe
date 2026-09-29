@@ -52,21 +52,38 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
   return data;
 }
 
+function shuffle<T>(items: T[]): T[] {
+  const result = [...items];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
 export async function getProductsByHomeSection(
   section: HomeSection,
-  limit = 8
+  limit = 8,
+  options: { random?: boolean } = {}
 ): Promise<ProductWithRelations[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  let query = supabase
     .from("products")
     .select(PRODUCT_SELECT)
     .eq("home_section", section)
-    .eq("is_active", true)
-    .order("created_at", { ascending: false })
-    .limit(limit);
+    .eq("is_active", true);
 
+  // "Mais vendidos" sorteia entre todo mundo marcado nessa seção em vez de
+  // pegar só os cadastrados mais recentemente — senão, quando ela cadastra
+  // vários produtos da mesma categoria de uma vez, a vitrine fica travada
+  // mostrando só aquela categoria até cadastrar outra coisa depois.
+  query = options.random ? query : query.order("created_at", { ascending: false }).limit(limit);
+
+  const { data, error } = await query;
   if (error) throw error;
-  return (data as unknown as ProductWithRelations[]).map(sortImages);
+
+  const products = (data as unknown as ProductWithRelations[]).map(sortImages);
+  return options.random ? shuffle(products).slice(0, limit) : products;
 }
 
 export async function getProducts(options: {
