@@ -17,6 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { ImageUpload } from "@/components/admin/image-upload";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -35,6 +36,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CATEGORY_ICONS } from "@/lib/category-icons";
 import type { Category } from "@/types/database.types";
@@ -43,17 +45,20 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
   const [editing, setEditing] = React.useState<Category | null>(null);
   const [open, setOpen] = React.useState(false);
   const [imageUrl, setImageUrl] = React.useState<string | null>(null);
+  const [isActive, setIsActive] = React.useState(true);
   const [isPending, startTransition] = React.useTransition();
 
   function openCreate() {
     setEditing(null);
     setImageUrl(null);
+    setIsActive(true);
     setOpen(true);
   }
 
   function openEdit(category: Category) {
     setEditing(category);
     setImageUrl(category.image_url);
+    setIsActive(category.is_active);
     setOpen(true);
   }
 
@@ -141,6 +146,10 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
                   defaultValue={editing?.display_order ?? 0}
                 />
               </div>
+              <div className="flex items-center gap-2">
+                <Switch name="is_active" checked={isActive} onCheckedChange={setIsActive} />
+                <Label>Ativa (aparece na loja)</Label>
+              </div>
               <DialogFooter>
                 <Button type="submit">{editing ? "Salvar" : "Criar"}</Button>
               </DialogFooter>
@@ -156,6 +165,7 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
               <TableHead>Nome</TableHead>
               <TableHead>Categoria pai</TableHead>
               <TableHead>Ordem</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead className="w-24" />
             </TableRow>
           </TableHeader>
@@ -167,6 +177,11 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
                   {categories.find((c) => c.id === category.parent_id)?.name ?? "—"}
                 </TableCell>
                 <TableCell>{category.display_order}</TableCell>
+                <TableCell>
+                  <Badge variant={category.is_active ? "success" : "secondary"}>
+                    {category.is_active ? "Ativa" : "Desativada"}
+                  </Badge>
+                </TableCell>
                 <TableCell>
                   <div className="flex justify-end gap-1">
                     <Button size="icon" variant="ghost" onClick={() => openEdit(category)}>

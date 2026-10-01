@@ -7,9 +7,7 @@ import { ProductCard } from "@/components/store/product-card";
 import { ProductGallery } from "@/components/store/product-gallery";
 import { ReviewsSection } from "@/components/store/reviews-section";
 import { ShippingCalculator } from "@/components/store/shipping-calculator";
-import { Badge } from "@/components/ui/badge";
 import { StarRating } from "@/components/ui/star-rating";
-import { discountPercent, formatPrice } from "@/lib/format";
 import { getProductBySlug, getProductReviews, getRelatedProducts } from "@/lib/queries";
 import { withTimeout } from "@/lib/with-timeout";
 
@@ -41,7 +39,6 @@ export default async function ProdutoPage({
     withTimeout(getRelatedProducts(product.category_id, product.id), 6000, []),
     withTimeout(getProductReviews(product.id), 6000, EMPTY_REVIEWS),
   ]);
-  const discount = discountPercent(product.price, product.promo_price);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -77,24 +74,6 @@ export default async function ProdutoPage({
               <span className="text-muted-foreground">({reviews.total} avaliações)</span>
             </a>
           )}
-
-          <div className="flex items-center gap-3">
-            {product.promo_price ? (
-              <>
-                <span className="font-display text-3xl font-semibold text-primary">
-                  {formatPrice(product.promo_price)}
-                </span>
-                <span className="text-lg text-muted-foreground line-through">
-                  {formatPrice(product.price)}
-                </span>
-                {discount && <Badge variant="accent">-{discount}%</Badge>}
-              </>
-            ) : (
-              <span className="font-display text-3xl font-semibold">
-                {formatPrice(product.price)}
-              </span>
-            )}
-          </div>
 
           <AddToCart product={product} />
 

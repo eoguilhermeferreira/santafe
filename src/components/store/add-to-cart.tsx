@@ -6,7 +6,9 @@ import { Minus, Plus, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 
 import { useCart } from "@/components/cart/cart-provider";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { discountPercent, formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { ProductWithRelations } from "@/types/database.types";
 
@@ -22,7 +24,10 @@ export function AddToCart({ product }: { product: ProductWithRelations }) {
   const selectedVariation = product.product_variations.find((v) => v.id === variationId);
   const stock = hasVariations ? selectedVariation?.stock ?? 0 : product.stock;
   const canBuy = product.is_active && stock > 0;
-  const unitPrice = product.promo_price ?? product.price;
+  // Variação com preço próprio substitui o preço do produto (ex: tamanho GG custa mais).
+  const variationPrice = selectedVariation?.price ?? null;
+  const unitPrice = variationPrice ?? product.promo_price ?? product.price;
+  const discount = variationPrice == null ? discountPercent(product.price, product.promo_price) : null;
 
   function addToCart() {
     addItem(
@@ -55,6 +60,24 @@ export function AddToCart({ product }: { product: ProductWithRelations }) {
 
   return (
     <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-3">
+        {variationPrice != null ? (
+          <span className="font-display text-3xl font-semibold">{formatPrice(variationPrice)}</span>
+        ) : product.promo_price ? (
+          <>
+            <span className="font-display text-3xl font-semibold text-primary">
+              {formatPrice(product.promo_price)}
+            </span>
+            <span className="text-lg text-muted-foreground line-through">
+              {formatPrice(product.price)}
+            </span>
+            {discount && <Badge variant="accent">-{discount}%</Badge>}
+          </>
+        ) : (
+          <span className="font-display text-3xl font-semibold">{formatPrice(product.price)}</span>
+        )}
+      </div>
+
       {hasVariations && (
         <div className="flex flex-col gap-2">
           <span className="text-sm font-medium">{product.product_variations[0].label}</span>

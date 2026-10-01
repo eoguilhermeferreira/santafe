@@ -30,6 +30,7 @@ export interface Database {
           icon: string | null;
           image_url: string | null;
           display_order: number;
+          is_active: boolean;
           created_at: string;
         };
         Insert: Partial<Omit<Database["public"]["Tables"]["categories"]["Row"], "id" | "created_at">> & {
@@ -112,6 +113,7 @@ export interface Database {
           product_id: string;
           label: string;
           value: string;
+          price: number | null;
           stock: number;
         };
         Insert: Partial<Omit<Database["public"]["Tables"]["product_variations"]["Row"], "id">> & {

@@ -29,7 +29,7 @@ import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import type { Category, HomeSection, ProductWithRelations } from "@/types/database.types";
 
-type Variation = { label: string; value: string; stock: number };
+type Variation = { value: string; price: string; stock: number };
 type HomeSectionOption = HomeSection | "__none__";
 
 export function ProductForm({
@@ -58,8 +58,15 @@ export function ProductForm({
   const [images, setImages] = React.useState<string[]>(
     product?.product_images.map((i) => i.url) ?? []
   );
+  const [variationLabel, setVariationLabel] = React.useState(
+    product?.product_variations[0]?.label ?? "Tamanho"
+  );
   const [variations, setVariations] = React.useState<Variation[]>(
-    product?.product_variations.map((v) => ({ label: v.label, value: v.value, stock: v.stock })) ?? []
+    product?.product_variations.map((v) => ({
+      value: v.value,
+      price: v.price?.toString() ?? "",
+      stock: v.stock,
+    })) ?? []
   );
   const [isUploading, setIsUploading] = React.useState(false);
   const [isSaving, setIsSaving] = React.useState(false);
@@ -140,7 +147,7 @@ export function ProductForm({
   }
 
   function addVariationRow() {
-    setVariations((current) => [...current, { label: "Tamanho", value: "", stock: 0 }]);
+    setVariations((current) => [...current, { value: "", price: "", stock: 0 }]);
   }
 
   function updateVariation(index: number, patch: Partial<Variation>) {
@@ -172,7 +179,12 @@ export function ProductForm({
       images: images.map((url) => ({ url })),
       variations: variations
         .filter((v) => v.value.trim())
-        .map((v) => ({ label: v.label.trim() || "Opção", value: v.value.trim(), stock: v.stock })),
+        .map((v) => ({
+          label: variationLabel.trim() || "Opção",
+          value: v.value.trim(),
+          price: v.price.trim() ? Number(v.price) : null,
+          stock: v.stock,
+        })),
     });
     setIsSaving(false);
 
@@ -354,36 +366,63 @@ export function ProductForm({
             Use variações para tamanhos, cores etc. Deixe vazio se o produto não tiver variação.
           </p>
         ) : (
-          <div className="space-y-2">
-            {variations.map((variation, index) => (
-              <div key={index} className="grid grid-cols-[1fr_1fr_100px_40px] gap-2">
-                <Input
-                  placeholder="Rótulo (ex: Cor)"
-                  value={variation.label}
-                  onChange={(e) => updateVariation(index, { label: e.target.value })}
-                />
-                <Input
-                  placeholder="Valor (ex: Marrom)"
-                  value={variation.value}
-                  onChange={(e) => updateVariation(index, { value: e.target.value })}
-                />
-                <Input
-                  type="number"
-                  min="0"
-                  placeholder="Estoque"
-                  value={variation.stock}
-                  onChange={(e) => updateVariation(index, { stock: Number(e.target.value) })}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setVariations((current) => current.filter((_, i) => i !== index))}
+          <div className="space-y-4">
+            <div className="max-w-xs">
+              <Label className="mb-1.5 block">Título</Label>
+              <Input
+                value={variationLabel}
+                onChange={(e) => setVariationLabel(e.target.value)}
+                placeholder="Ex: Tamanho, Cor"
+              />
+            </div>
+            <div className="space-y-3">
+              {variations.map((variation, index) => (
+                <div
+                  key={index}
+                  className="grid gap-2 rounded-md border border-border p-3 sm:grid-cols-[1fr_1fr_1fr_40px] sm:items-end"
                 >
-                  <Trash2 className="size-4 text-destructive" />
-                </Button>
-              </div>
-            ))}
+                  <div>
+                    <Label className="mb-1 block text-xs text-muted-foreground">
+                      {variationLabel || "Valor"} (ex: G)
+                    </Label>
+                    <Input
+                      value={variation.value}
+                      onChange={(e) => updateVariation(index, { value: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label className="mb-1 block text-xs text-muted-foreground">
+                      Preço diferente (opcional)
+                    </Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      placeholder={price ? `R$ ${price}` : "0,00"}
+                      value={variation.price}
+                      onChange={(e) => updateVariation(index, { price: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label className="mb-1 block text-xs text-muted-foreground">Estoque</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={variation.stock}
+                      onChange={(e) => updateVariation(index, { stock: Number(e.target.value) })}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setVariations((current) => current.filter((_, i) => i !== index))}
+                  >
+                    <Trash2 className="size-4 text-destructive" />
+                  </Button>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </Card>

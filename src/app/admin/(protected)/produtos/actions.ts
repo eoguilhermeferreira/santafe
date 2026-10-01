@@ -22,6 +22,7 @@ const productFormSchema = z.object({
     z.object({
       label: z.string().trim().min(1),
       value: z.string().trim().min(1),
+      price: z.number().nonnegative().nullable(),
       stock: z.number().int().nonnegative(),
     })
   ),
@@ -69,7 +70,7 @@ async function saveRelations(
   supabase: Awaited<ReturnType<typeof createClient>>,
   productId: string,
   images: { url: string }[],
-  variations: { label: string; value: string; stock: number }[]
+  variations: { label: string; value: string; price: number | null; stock: number }[]
 ) {
   await supabase.from("product_images").delete().eq("product_id", productId);
   await supabase.from("product_variations").delete().eq("product_id", productId);
@@ -125,11 +126,12 @@ export async function updateProduct(id: string, input: ProductFormInput): Promis
   const parsed = productFormSchema.safeParse(input);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Dados inválidos" };
   const { images, variations, ...product } = parsed.data;
+  const slug = slugify(product.name);
 
   const supabase = await createClient();
   const { error } = await supabase
     .from("products")
-    .update({ ...product, slug: slugify(product.name) })
+    .update({ ...product, slug })
     .eq("id", id);
 
   if (error) return { error: friendlyError(error) };
@@ -142,7 +144,10 @@ export async function updateProduct(id: string, input: ProductFormInput): Promis
 
   revalidatePath("/admin/produtos");
   revalidatePath("/produtos");
-  revalidatePath(`/produto/${product.name}`);
+  // Bug corrigido: antes usava product.name (não existe como rota) em vez do
+  // slug — a página do produto na loja podia ficar com cache desatualizado
+  // depois de editar (ex: tamanhos de variação não apareciam pro cliente).
+  revalidatePath(`/produto/${slug}`);
   revalidatePath("/");
   return { id };
 }

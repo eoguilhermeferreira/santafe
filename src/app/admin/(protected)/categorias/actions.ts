@@ -12,6 +12,7 @@ const categorySchema = z.object({
   icon: z.string().trim().nullable(),
   image_url: z.string().trim().nullable(),
   display_order: z.number().int().default(0),
+  is_active: z.boolean(),
 });
 
 function nullableField(value: FormDataEntryValue | null) {
@@ -26,6 +27,7 @@ function parseFormData(formData: FormData) {
     icon: nullableField(formData.get("icon")),
     image_url: nullableField(formData.get("image_url")),
     display_order: Number(formData.get("display_order") ?? 0),
+    is_active: formData.get("is_active") === "on",
   });
 }
 

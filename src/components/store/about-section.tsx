@@ -8,7 +8,7 @@ import Image from "next/image";
 export function AboutSection() {
   return (
     <div className="grid gap-6 overflow-hidden rounded-2xl border border-border bg-card sm:grid-cols-2 sm:gap-0">
-      <div className="relative aspect-[3/4] bg-muted">
+      <div className="relative aspect-[923/1280] bg-muted">
         <Image
           src="/images/fachada-loja.jpg"
           alt="Fachada da loja Santa Fé Artigos Católicos"
