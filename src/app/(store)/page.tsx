@@ -65,8 +65,8 @@ export default async function HomePage() {
             eyebrow="Fé em oração"
             title="Terços e crucifixos para todos os momentos"
             description="Peças abençoadas para fortalecer sua fé e presentear quem você ama."
-            buttonLabel="Ver terços"
-            href="/categoria/tercos"
+            buttonLabel="Ver crucifixos"
+            href="/categoria/crucifixos"
           />
           <PromoBanner
             imageUrl="https://images.unsplash.com/photo-1497621122273-f5cfb6065c56?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
