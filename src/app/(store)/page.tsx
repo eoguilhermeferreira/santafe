@@ -30,8 +30,8 @@ export default async function HomePage() {
       withTimeout(getActiveBanners(), 6000, []),
       withTimeout(getCategories(), 6000, []),
       withTimeout(getProductsByHomeSection("mais_vendidos", 8, { random: true }), 6000, []),
-      withTimeout(getProductsByHomeSection("novidades"), 6000, []),
-      withTimeout(getProductsByHomeSection("ofertas"), 6000, []),
+      withTimeout(getProductsByHomeSection("novidades", 8, { random: true }), 6000, []),
+      withTimeout(getProductsByHomeSection("ofertas", 8, { random: true }), 6000, []),
       withTimeout(getProducts({ categorySlug: "imagens", pageSize: 8 }), 6000, EMPTY_PRODUCTS),
       withTimeout(getProducts({ categorySlug: "tercos", pageSize: 8 }), 6000, EMPTY_PRODUCTS),
     ]);

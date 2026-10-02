@@ -73,7 +73,7 @@ export async function getProductsByHomeSection(
     .eq("home_section", section)
     .eq("is_active", true);
 
-  // "Mais vendidos" sorteia entre todo mundo marcado nessa seção em vez de
+  // Vitrines da home sorteiam entre todo mundo marcado nessa seção em vez de
   // pegar só os cadastrados mais recentemente — senão, quando ela cadastra
   // vários produtos da mesma categoria de uma vez, a vitrine fica travada
   // mostrando só aquela categoria até cadastrar outra coisa depois.
