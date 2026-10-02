@@ -52,7 +52,11 @@ export default async function HomePage() {
         </Reveal>
 
         <Reveal>
-          <ProductSection title="Mais vendidos" href="/produtos" products={maisVendidos} />
+          <ProductSection
+            title="Mais vendidos"
+            href="/produtos?secao=mais_vendidos"
+            products={maisVendidos}
+          />
         </Reveal>
 
         <Reveal className="grid gap-4 sm:grid-cols-2">
@@ -76,7 +80,7 @@ export default async function HomePage() {
         </Reveal>
 
         <Reveal>
-          <ProductSection title="Novidades" href="/produtos" products={novidades} />
+          <ProductSection title="Novidades" href="/produtos?secao=novidades" products={novidades} />
         </Reveal>
 
         <Reveal>
@@ -88,7 +92,7 @@ export default async function HomePage() {
         </Reveal>
 
         <Reveal>
-          <ProductSection title="Ofertas" href="/produtos" products={ofertas} />
+          <ProductSection title="Ofertas" href="/produtos?secao=ofertas" products={ofertas} />
         </Reveal>
 
         <Reveal>

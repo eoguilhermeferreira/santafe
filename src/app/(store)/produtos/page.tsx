@@ -4,6 +4,8 @@ import { BackButton } from "@/components/store/back-button";
 import { ProductCard } from "@/components/store/product-card";
 import { Button } from "@/components/ui/button";
 import { getProducts } from "@/lib/queries";
+import { HOME_SECTION_LABELS } from "@/lib/product-constants";
+import type { HomeSection } from "@/types/database.types";
 
 const PAGE_SIZE = 24;
 
@@ -11,16 +13,22 @@ export const metadata = {
   title: "Produtos",
 };
 
+function isHomeSection(value: string | undefined): value is HomeSection {
+  return !!value && value in HOME_SECTION_LABELS;
+}
+
 export default async function ProdutosPage({
   searchParams,
 }: {
-  searchParams: Promise<{ busca?: string; pagina?: string }>;
+  searchParams: Promise<{ busca?: string; pagina?: string; secao?: string }>;
 }) {
-  const { busca, pagina } = await searchParams;
+  const { busca, pagina, secao } = await searchParams;
   const page = Math.max(1, Number(pagina) || 1);
+  const homeSection = isHomeSection(secao) ? secao : undefined;
 
   const { products, total } = await getProducts({
     search: busca,
+    homeSection,
     page,
     pageSize: PAGE_SIZE,
   });
@@ -32,7 +40,11 @@ export default async function ProdutosPage({
       <BackButton />
       <div className="mb-6 mt-2 flex flex-col gap-3">
         <h1 className="font-display text-2xl font-semibold sm:text-3xl">
-          {busca ? `Resultados para "${busca}"` : "Todos os produtos"}
+          {busca
+            ? `Resultados para "${busca}"`
+            : homeSection
+              ? HOME_SECTION_LABELS[homeSection]
+              : "Todos os produtos"}
         </h1>
         <p className="text-sm text-muted-foreground">{total} produtos encontrados</p>
       </div>
@@ -55,7 +67,11 @@ export default async function ProdutosPage({
             <Link
               href={{
                 pathname: "/produtos",
-                query: { ...(busca ? { busca } : {}), pagina: String(page - 1) },
+                query: {
+                  ...(busca ? { busca } : {}),
+                  ...(homeSection ? { secao: homeSection } : {}),
+                  pagina: String(page - 1),
+                },
               }}
               aria-disabled={page <= 1}
             >
@@ -69,7 +85,11 @@ export default async function ProdutosPage({
             <Link
               href={{
                 pathname: "/produtos",
-                query: { ...(busca ? { busca } : {}), pagina: String(page + 1) },
+                query: {
+                  ...(busca ? { busca } : {}),
+                  ...(homeSection ? { secao: homeSection } : {}),
+                  pagina: String(page + 1),
+                },
               }}
               aria-disabled={page >= totalPages}
             >

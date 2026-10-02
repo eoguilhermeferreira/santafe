@@ -89,10 +89,11 @@ export async function getProductsByHomeSection(
 export async function getProducts(options: {
   search?: string;
   categorySlug?: string;
+  homeSection?: HomeSection;
   page?: number;
   pageSize?: number;
 } = {}): Promise<{ products: ProductWithRelations[]; total: number }> {
-  const { search, categorySlug, page = 1, pageSize = 24 } = options;
+  const { search, categorySlug, homeSection, page = 1, pageSize = 24 } = options;
   const supabase = await createClient();
 
   let query = supabase
@@ -102,6 +103,10 @@ export async function getProducts(options: {
 
   if (search) {
     query = query.or(`name.ilike.%${search}%,code.ilike.%${search}%`);
+  }
+
+  if (homeSection) {
+    query = query.eq("home_section", homeSection);
   }
 
   if (categorySlug) {
