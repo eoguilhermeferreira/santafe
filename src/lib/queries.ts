@@ -45,7 +45,10 @@ export async function getBannersBySlot(): Promise<Record<BannerSlot, Banner[]>> 
   ) as Record<BannerSlot, Banner[]>;
 
   for (const banner of (data ?? []) as Banner[]) {
-    grouped[banner.slot]?.push(banner);
+    // Se a migração da coluna "slot" ainda não rodou no banco, banner.slot
+    // vem undefined — cai no topo em vez de sumir silenciosamente do site.
+    const slot = grouped[banner.slot] ? banner.slot : "topo";
+    grouped[slot].push(banner);
   }
   return grouped;
 }
