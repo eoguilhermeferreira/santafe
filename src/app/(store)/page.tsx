@@ -4,6 +4,7 @@ import { AboutSection } from "@/components/store/about-section";
 import { BannerCarousel } from "@/components/store/banner-carousel";
 import { CategoryGrid } from "@/components/store/category-grid";
 import { FaqAccordion } from "@/components/store/faq-accordion";
+import { GoogleReviews } from "@/components/store/google-reviews";
 import { PromoBanner, PromoSquareBanner } from "@/components/store/promo-banner";
 import { ProductSection } from "@/components/store/product-section";
 import { Reveal } from "@/components/store/reveal";
@@ -61,6 +62,10 @@ export default async function HomePage() {
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-14 px-4">
         <Reveal>
           <AboutSection />
+        </Reveal>
+
+        <Reveal>
+          <GoogleReviews />
         </Reveal>
 
         <Reveal>
