@@ -32,7 +32,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import type { Banner, Category } from "@/types/database.types";
+import { BANNER_SLOT_LABELS, BANNER_SLOT_ORDER } from "@/lib/banner-constants";
+import type { Banner, BannerSlot, Category } from "@/types/database.types";
 
 const NO_LINK = "none";
 
@@ -46,6 +47,7 @@ export function BannerManager({
   const [editing, setEditing] = React.useState<Banner | null>(null);
   const [open, setOpen] = React.useState(false);
   const [imageUrl, setImageUrl] = React.useState<string | null>(null);
+  const [slot, setSlot] = React.useState<BannerSlot>("topo");
   const [buttonLink, setButtonLink] = React.useState("");
   const [isActive, setIsActive] = React.useState(true);
   const [isPending, startTransition] = React.useTransition();
@@ -53,6 +55,7 @@ export function BannerManager({
   function openCreate() {
     setEditing(null);
     setImageUrl(null);
+    setSlot("topo");
     setButtonLink("");
     setIsActive(true);
     setOpen(true);
@@ -61,6 +64,7 @@ export function BannerManager({
   function openEdit(banner: Banner) {
     setEditing(banner);
     setImageUrl(banner.image_url);
+    setSlot(banner.slot);
     setButtonLink(banner.button_link ?? "");
     setIsActive(banner.is_active);
     setOpen(true);
@@ -80,6 +84,11 @@ export function BannerManager({
     toast.success(editing ? "Banner atualizado" : "Banner criado");
     setOpen(false);
   }
+
+  const bannersBySlot = BANNER_SLOT_ORDER.map((value) => ({
+    slot: value,
+    banners: banners.filter((banner) => banner.slot === value),
+  }));
 
   function handleDelete(id: string) {
     startTransition(async () => {
@@ -105,8 +114,28 @@ export function BannerManager({
             </DialogHeader>
             <form action={handleSubmit} className="space-y-4">
               <div>
+                <Label className="mb-1.5 block">Local do banner</Label>
+                <input type="hidden" name="slot" value={slot} />
+                <Select value={slot} onValueChange={(value) => setSlot(value as BannerSlot)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {BANNER_SLOT_ORDER.map((value) => (
+                      <SelectItem key={value} value={value}>
+                        {BANNER_SLOT_LABELS[value]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
                 <Label className="mb-1.5 block">Imagem</Label>
                 <ImageUpload bucket="banners" value={imageUrl} onChange={setImageUrl} name="image_url" />
+              </div>
+              <div>
+                <Label className="mb-1.5 block">Selo pequeno acima do título (opcional)</Label>
+                <Input name="eyebrow" defaultValue={editing?.eyebrow ?? ""} placeholder="Ex: Fé em oração" />
               </div>
               <div>
                 <Label className="mb-1.5 block">Título (opcional)</Label>
@@ -170,43 +199,56 @@ export function BannerManager({
         </Dialog>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {banners.map((banner) => (
-          <div key={banner.id} className="overflow-hidden rounded-lg border border-border bg-card">
-            <div className="relative aspect-[16/7] bg-muted">
-              <Image src={banner.image_url} alt={banner.title ?? ""} fill className="object-cover" />
-            </div>
-            <div className="space-y-2 p-4">
-              <div className="flex items-center justify-between gap-2">
-                <span className="truncate text-sm font-medium">{banner.title || "Sem título"}</span>
-                <Badge variant={banner.is_active ? "success" : "secondary"}>
-                  {banner.is_active ? "Ativo" : "Inativo"}
-                </Badge>
+      <div className="space-y-8">
+        {bannersBySlot.map(({ slot: slotValue, banners: slotBanners }) => (
+          <div key={slotValue} className="space-y-3">
+            <h2 className="text-sm font-semibold text-muted-foreground">
+              {BANNER_SLOT_LABELS[slotValue]}
+            </h2>
+            {slotBanners.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Nenhum banner cadastrado aqui ainda.</p>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {slotBanners.map((banner) => (
+                  <div key={banner.id} className="overflow-hidden rounded-lg border border-border bg-card">
+                    <div className="relative aspect-[16/7] bg-muted">
+                      <Image src={banner.image_url} alt={banner.title ?? ""} fill className="object-cover" />
+                    </div>
+                    <div className="space-y-2 p-4">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="truncate text-sm font-medium">{banner.title || "Sem título"}</span>
+                        <Badge variant={banner.is_active ? "success" : "secondary"}>
+                          {banner.is_active ? "Ativo" : "Inativo"}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-end gap-1">
+                        <Button size="icon" variant="ghost" onClick={() => openEdit(banner)}>
+                          <Pencil className="size-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="icon" variant="ghost">
+                              <Trash2 className="size-4 text-destructive" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Remover banner?</AlertDialogTitle>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction disabled={isPending} onClick={() => handleDelete(banner.id)}>
+                                Remover
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="flex justify-end gap-1">
-                <Button size="icon" variant="ghost" onClick={() => openEdit(banner)}>
-                  <Pencil className="size-4" />
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button size="icon" variant="ghost">
-                      <Trash2 className="size-4 text-destructive" />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Remover banner?</AlertDialogTitle>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                      <AlertDialogAction disabled={isPending} onClick={() => handleDelete(banner.id)}>
-                        Remover
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </div>
+            )}
           </div>
         ))}
       </div>

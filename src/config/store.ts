@@ -41,5 +41,6 @@ export const storeConfig = {
     "Bíblias e artigos para sua vida de oração",
     "Sua fé, presente em cada detalhe",
     "Parcelamos no cartão",
+    "Somos nota 5 ⭐️ no Google",
   ],
 } as const;

@@ -1,10 +1,18 @@
 import { createClient } from "@/lib/supabase/public";
-import type { Category, HomeSection, ProductWithRelations, Review } from "@/types/database.types";
+import { BANNER_SLOT_ORDER } from "@/lib/banner-constants";
+import type {
+  Banner,
+  BannerSlot,
+  Category,
+  HomeSection,
+  ProductWithRelations,
+  Review,
+} from "@/types/database.types";
 
 const PRODUCT_SELECT = `
   *,
   product_images ( id, url, display_order ),
-  product_variations ( id, label, value, stock ),
+  product_variations ( id, label, value, price, stock ),
   categories:category_id ( id, name, slug )
 `;
 
@@ -17,7 +25,12 @@ function sortImages(product: ProductWithRelations): ProductWithRelations {
   };
 }
 
-export async function getActiveBanners() {
+/**
+ * Banners ativos agrupados por local (slot) — o carrossel do topo e os
+ * banners promocionais espalhados pela home, todos editáveis pelo mesmo
+ * painel de admin. Uma consulta só, agrupada em memória por slot.
+ */
+export async function getBannersBySlot(): Promise<Record<BannerSlot, Banner[]>> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("banners")
@@ -26,7 +39,15 @@ export async function getActiveBanners() {
     .order("display_order", { ascending: true });
 
   if (error) throw error;
-  return data;
+
+  const grouped = Object.fromEntries(
+    BANNER_SLOT_ORDER.map((slot) => [slot, [] as Banner[]])
+  ) as Record<BannerSlot, Banner[]>;
+
+  for (const banner of (data ?? []) as Banner[]) {
+    grouped[banner.slot]?.push(banner);
+  }
+  return grouped;
 }
 
 export async function getCategories(): Promise<Category[]> {

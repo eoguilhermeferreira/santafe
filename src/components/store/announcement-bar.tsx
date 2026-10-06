@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { BookOpenText, CreditCard, Truck } from "lucide-react";
+import { BookOpenText, CreditCard, Star, Truck } from "lucide-react";
 
 import { CrucifixIcon } from "@/components/icons/religious-icons";
 import { storeConfig } from "@/config/store";
@@ -13,7 +13,7 @@ const EXIT_MS = 450;
 type Phase = "idle" | "exiting" | "entering";
 
 // Um ícone pra cada frase de storeConfig.announcements, na mesma ordem.
-const ICONS = [Truck, BookOpenText, CrucifixIcon, CreditCard];
+const ICONS = [Truck, BookOpenText, CrucifixIcon, CreditCard, Star];
 
 /**
  * Barra fixa no topo da loja com frases que giram sozinhas: a frase atual

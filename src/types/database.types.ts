@@ -17,6 +17,7 @@ export type DeliveryStatus =
   | "cancelado";
 export type DeliveryMethod = "entrega" | "retirada";
 export type ReviewStatus = "pendente" | "publicada" | "oculta";
+export type BannerSlot = "topo" | "meio_esquerda" | "meio_direita" | "quadrado_1" | "quadrado_2";
 
 export interface Database {
   public: {
@@ -135,6 +136,8 @@ export interface Database {
       banners: {
         Row: {
           id: string;
+          slot: BannerSlot;
+          eyebrow: string | null;
           title: string | null;
           description: string | null;
           image_url: string;

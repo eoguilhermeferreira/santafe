@@ -10,24 +10,33 @@ import { Reveal } from "@/components/store/reveal";
 import { storeConfig } from "@/config/store";
 import { FAQ_ITEMS } from "@/lib/faq";
 import {
-  getActiveBanners,
+  getBannersBySlot,
   getCategories,
   getProducts,
   getProductsByHomeSection,
 } from "@/lib/queries";
 import { withTimeout } from "@/lib/with-timeout";
+import type { Banner, BannerSlot } from "@/types/database.types";
 
 const HIGHLIGHT_FAQ_ITEMS = FAQ_ITEMS.filter((item) => item.highlight);
 
 const EMPTY_PRODUCTS = { products: [], total: 0 };
 
+const EMPTY_BANNER_SLOTS: Record<BannerSlot, Banner[]> = {
+  topo: [],
+  meio_esquerda: [],
+  meio_direita: [],
+  quadrado_1: [],
+  quadrado_2: [],
+};
+
 export default async function HomePage() {
   // Teto de 6s por consulta — se o Supabase estiver lento, a home renderiza
   // com essa seção vazia em vez de a página inteira estourar o timeout da
   // Vercel e cair com "Gateway Timeout".
-  const [banners, categories, maisVendidos, novidades, ofertas, imagens, tercos] =
+  const [bannerSlots, categories, maisVendidos, novidades, ofertas, imagens, tercos] =
     await Promise.all([
-      withTimeout(getActiveBanners(), 6000, []),
+      withTimeout(getBannersBySlot(), 6000, EMPTY_BANNER_SLOTS),
       withTimeout(getCategories(), 6000, []),
       withTimeout(getProductsByHomeSection("mais_vendidos", 8, { random: true }), 6000, []),
       withTimeout(getProductsByHomeSection("novidades", 8, { random: true }), 6000, []),
@@ -36,10 +45,17 @@ export default async function HomePage() {
       withTimeout(getProducts({ categorySlug: "tercos", pageSize: 8 }), 6000, EMPTY_PRODUCTS),
     ]);
 
+  // Banners promocionais do meio da home: se ela já configurou um banner
+  // pra esse local no admin, usa ele; senão cai no texto/imagem padrão.
+  const tercosCrucifixosBanner = bannerSlots.meio_esquerda[0];
+  const bibliasBanner = bannerSlots.meio_direita[0];
+  const saoMiguelBanner = bannerSlots.quadrado_1[0];
+  const sagradaFamiliaBanner = bannerSlots.quadrado_2[0];
+
   return (
     <div className="flex flex-col gap-14 pb-6 sm:pb-8">
       <div className="relative left-1/2 -mt-[81px] w-screen -translate-x-1/2 sm:-mt-[97px]">
-        <BannerCarousel banners={banners} />
+        <BannerCarousel banners={bannerSlots.topo} />
       </div>
 
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-14 px-4">
@@ -61,20 +77,32 @@ export default async function HomePage() {
 
         <Reveal className="grid gap-4 sm:grid-cols-2">
           <PromoBanner
-            imageUrl="https://images.unsplash.com/photo-1569845177077-2a37322a60c7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
-            eyebrow="Fé em oração"
-            title="Terços e crucifixos para todos os momentos"
-            description="Peças abençoadas para fortalecer sua fé e presentear quem você ama."
-            buttonLabel="Ver crucifixos"
-            href="/categoria/crucifixos"
+            imageUrl={
+              tercosCrucifixosBanner?.image_url ??
+              "https://images.unsplash.com/photo-1569845177077-2a37322a60c7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
+            }
+            eyebrow={tercosCrucifixosBanner?.eyebrow ?? "Fé em oração"}
+            title={tercosCrucifixosBanner?.title ?? "Terços e crucifixos para todos os momentos"}
+            description={
+              tercosCrucifixosBanner?.description ??
+              "Peças abençoadas para fortalecer sua fé e presentear quem você ama."
+            }
+            buttonLabel={tercosCrucifixosBanner?.button_label ?? "Ver crucifixos"}
+            href={tercosCrucifixosBanner?.button_link ?? "/categoria/crucifixos"}
           />
           <PromoBanner
-            imageUrl="https://images.unsplash.com/photo-1497621122273-f5cfb6065c56?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
-            eyebrow="Palavra de Deus"
-            title="Bíblias e livros católicos"
-            description="Edições para todas as idades, para ler, estudar e meditar todos os dias."
-            buttonLabel="Ver bíblias"
-            href="/categoria/biblias"
+            imageUrl={
+              bibliasBanner?.image_url ??
+              "https://images.unsplash.com/photo-1497621122273-f5cfb6065c56?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
+            }
+            eyebrow={bibliasBanner?.eyebrow ?? "Palavra de Deus"}
+            title={bibliasBanner?.title ?? "Bíblias e livros católicos"}
+            description={
+              bibliasBanner?.description ??
+              "Edições para todas as idades, para ler, estudar e meditar todos os dias."
+            }
+            buttonLabel={bibliasBanner?.button_label ?? "Ver bíblias"}
+            href={bibliasBanner?.button_link ?? "/categoria/biblias"}
             imageSide="right"
           />
         </Reveal>
@@ -85,9 +113,12 @@ export default async function HomePage() {
 
         <Reveal>
           <PromoSquareBanner
-            imageUrl="/images/sao-miguel-arcanjo.jpg"
-            eyebrow="Devoção"
-            title="São Miguel Arcanjo"
+            imageUrl={saoMiguelBanner?.image_url ?? "/images/sao-miguel-arcanjo.jpg"}
+            eyebrow={saoMiguelBanner?.eyebrow ?? "Devoção"}
+            title={saoMiguelBanner?.title ?? "São Miguel Arcanjo"}
+            description={saoMiguelBanner?.description ?? undefined}
+            buttonLabel={saoMiguelBanner?.button_label ?? undefined}
+            href={saoMiguelBanner?.button_link ?? undefined}
           />
         </Reveal>
 
@@ -97,9 +128,12 @@ export default async function HomePage() {
 
         <Reveal>
           <PromoSquareBanner
-            imageUrl="/images/sagrada-familia.jpg"
-            eyebrow="Devoção"
-            title="Sagrada Família"
+            imageUrl={sagradaFamiliaBanner?.image_url ?? "/images/sagrada-familia.jpg"}
+            eyebrow={sagradaFamiliaBanner?.eyebrow ?? "Devoção"}
+            title={sagradaFamiliaBanner?.title ?? "Sagrada Família"}
+            description={sagradaFamiliaBanner?.description ?? undefined}
+            buttonLabel={sagradaFamiliaBanner?.button_label ?? undefined}
+            href={sagradaFamiliaBanner?.button_link ?? undefined}
           />
         </Reveal>
 

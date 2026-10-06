@@ -3,9 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { BANNER_SLOT_ORDER } from "@/lib/banner-constants";
 import { createClient } from "@/lib/supabase/server";
+import type { BannerSlot } from "@/types/database.types";
 
 const bannerSchema = z.object({
+  slot: z.enum(BANNER_SLOT_ORDER as [BannerSlot, ...BannerSlot[]]),
+  eyebrow: z.string().trim().nullable(),
   title: z.string().trim().nullable(),
   description: z.string().trim().nullable(),
   image_url: z.string().trim().min(1, "Envie uma imagem"),
@@ -21,6 +25,8 @@ function optional(value: FormDataEntryValue | null) {
 
 function parseFormData(formData: FormData) {
   return bannerSchema.parse({
+    slot: formData.get("slot"),
+    eyebrow: optional(formData.get("eyebrow")),
     title: optional(formData.get("title")),
     description: optional(formData.get("description")),
     image_url: formData.get("image_url"),
