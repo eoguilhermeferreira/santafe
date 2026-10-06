@@ -2,8 +2,7 @@ import Image from "next/image";
 
 /**
  * Bloco institucional da home: foto da loja de um lado, texto do outro
- * (no mobile a foto fica em cima, o texto embaixo). Texto é um rascunho —
- * a loja revisa depois.
+ * (no mobile a foto fica em cima, o texto embaixo).
  */
 export function AboutSection() {
   return (
@@ -23,16 +22,26 @@ export function AboutSection() {
         </span>
         <h2 className="font-display text-2xl font-semibold sm:text-3xl">Sobre a Santa Fé</h2>
         <p className="text-sm text-muted-foreground sm:text-base">
-          A Santa Fé Artigos Católicos nasceu do desejo de levar fé e devoção pra dentro de
-          cada lar. Em nossa loja física em Avaré/SP, e agora também aqui online, selecionamos
-          com carinho bíblias, terços, crucifixos, imagens e escapulários pra acompanhar você
-          em cada momento da caminhada — da oração do dia a dia às datas mais especiais da
-          família.
+          A Santa Fé nasceu de uma necessidade e de um propósito.
         </p>
         <p className="text-sm text-muted-foreground sm:text-base">
-          Cada peça é escolhida pensando em qualidade e significado, pra ser presente ou
-          lembrança de fé por muitos anos. Agora entregamos pra todo o Brasil, com o mesmo
-          cuidado de sempre.
+          Ao participar de encontros e viver a fé de perto, percebi a falta de um espaço em
+          nossa cidade onde as pessoas pudessem encontrar artigos católicos com significado e
+          propósito.
+        </p>
+        <p className="text-sm text-muted-foreground sm:text-base">
+          Em um momento delicado da minha família, com o adoecimento do meu esposo, deixei meu
+          trabalho e, com fé e coragem, dei início à Santa Fé.
+        </p>
+        <p className="text-sm text-muted-foreground sm:text-base">
+          Começamos pela internet e, pelas mãos de Deus, chegamos à nossa loja física.
+        </p>
+        <p className="text-sm text-muted-foreground sm:text-base">
+          Hoje, a Santa Fé é mais do que uma loja: é um lugar para encontrar, viver e
+          compartilhar a fé, com carinho, amor e propósito.
+        </p>
+        <p className="text-sm text-muted-foreground sm:text-base">
+          O que começou como uma necessidade, Deus transformou em missão.
         </p>
       </div>
     </div>
