@@ -77,7 +77,10 @@ export default async function ProdutoPage({
 
           <AddToCart product={product} />
 
-          <ShippingCalculator weightGrams={product.weight_grams} />
+          <ShippingCalculator
+            weightGrams={product.weight_grams}
+            price={product.promo_price ?? product.price}
+          />
 
           {product.description && (
             <div className="mt-4 space-y-2 border-t border-border pt-4">

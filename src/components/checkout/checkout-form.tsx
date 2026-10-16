@@ -11,6 +11,7 @@ import {
   getShippingOptions,
 } from "@/app/(store)/checkout/actions";
 import { useCart } from "@/components/cart/cart-provider";
+import { ShippingPrice } from "@/components/store/shipping-price";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -35,6 +36,7 @@ const PICKUP_SHIPPING_OPTION: ShippingOption = {
   id: "retirada",
   label: "Retirar na loja (grátis)",
   cost: 0,
+  originalCost: 0,
 };
 
 type AddressState = Omit<CheckoutFormValues, "paymentMethod" | "deliveryMethod">;
@@ -90,7 +92,7 @@ export function CheckoutForm() {
 
     if (digits.length === 8) {
       setIsShippingLoading(true);
-      const options = await getShippingOptions(digits, totalWeightGrams);
+      const options = await getShippingOptions(digits, totalWeightGrams, subtotal);
       setShippingOptions(options);
       setSelectedShippingId(options[0]?.id ?? "");
       setIsShippingLoading(false);
@@ -355,7 +357,7 @@ export function CheckoutForm() {
                     />
                     {option.label}
                   </span>
-                  <span>{formatPrice(option.cost)}</span>
+                  <ShippingPrice cost={option.cost} originalCost={option.originalCost} />
                 </label>
               ))}
             </div>
@@ -364,7 +366,7 @@ export function CheckoutForm() {
               <>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{shipping.label}</span>
-                  <span>{formatPrice(shipping.cost)}</span>
+                  <ShippingPrice cost={shipping.cost} originalCost={shipping.originalCost} />
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Valor final do frete confirmado ao preencher o CEP.

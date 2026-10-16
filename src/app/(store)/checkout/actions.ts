@@ -19,6 +19,7 @@ const PICKUP_SHIPPING_OPTION: ShippingOption = {
   id: "retirada",
   label: "Retirar na loja (grátis)",
   cost: 0,
+  originalCost: 0,
 };
 
 /**
@@ -32,31 +33,48 @@ const PICKUP_SHIPPING_OPTION: ShippingOption = {
  * CEP/peso, só Correios/Jadlog/Loggi, até 2 serviços de cada); sem token
  * configurado ou se a cotação falhar/vier vazia, cai pro frete fixo como
  * única opção.
+ *
+ * Acima do valor configurado em `storeConfig.shipping.freeShippingThresholdCents`,
+ * o cliente continua escolhendo a transportadora (pra ela saber por quem
+ * enviar depois), só que o valor cobrado vira R$0 — `originalCost` guarda
+ * o preço real pra mostrar riscado na tela.
  */
 export async function getShippingOptions(
   cep: string,
-  weightGrams: number
+  weightGrams: number,
+  subtotal: number
 ): Promise<ShippingOption[]> {
   const address = await fetchAddressByCep(cep);
   const isLocal =
     address?.city.trim().toLowerCase() === storeConfig.address.city.toLowerCase() &&
     address?.state.trim().toUpperCase() === storeConfig.address.state;
 
+  let options: ShippingOption[];
   if (isLocal) {
     const flat = calculateShipping();
-    return [
+    options = [
       {
         id: "flat",
         label: `Entrega em ${storeConfig.address.city}/${storeConfig.address.state}`,
         cost: flat.cost,
+        originalCost: flat.cost,
       },
     ];
+  } else {
+    const melhorEnvio = await getMelhorEnvioOptions({ toCep: cep, weightGrams });
+    if (melhorEnvio.length > 0) {
+      options = melhorEnvio;
+    } else {
+      const flat = calculateShipping();
+      options = [{ id: "flat", label: flat.label, cost: flat.cost, originalCost: flat.cost }];
+    }
   }
 
-  const options = await getMelhorEnvioOptions({ toCep: cep, weightGrams });
-  if (options.length > 0) return options;
-  const flat = calculateShipping();
-  return [{ id: "flat", label: flat.label, cost: flat.cost }];
+  const freeShippingThreshold = storeConfig.shipping.freeShippingThresholdCents / 100;
+  if (subtotal >= freeShippingThreshold) {
+    return options.map((option) => ({ ...option, cost: 0 }));
+  }
+  return options;
 }
 
 const createOrderInput = z.object({
@@ -196,9 +214,9 @@ export async function createOrder(input: unknown): Promise<CreateOrderResult> {
   }
 
   const isPickup = customer.deliveryMethod === "retirada";
-  let shipping: { id: string; label: string; cost: number } = PICKUP_SHIPPING_OPTION;
+  let shipping: ShippingOption = PICKUP_SHIPPING_OPTION;
   if (!isPickup) {
-    const shippingOptions = await getShippingOptions(customer.cep, totalWeightGrams);
+    const shippingOptions = await getShippingOptions(customer.cep, totalWeightGrams, subtotal);
     shipping = shippingOptions.find((option) => option.id === shippingOptionId) ?? shippingOptions[0];
   }
   const total = subtotal + shipping.cost;

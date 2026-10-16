@@ -16,7 +16,10 @@ import { storeConfig } from "@/config/store";
 export interface ShippingOption {
   id: string;
   label: string;
+  /** Valor cobrado de fato do cliente (0 quando o frete grátis se aplica). */
   cost: number;
+  /** Valor real da transportadora, pra mostrar riscado quando for grátis. */
+  originalCost: number;
 }
 
 // Só essas transportadoras aparecem pro cliente, no máximo 2 serviços
@@ -99,10 +102,12 @@ export async function getMelhorEnvioOptions({
       const cheapestFirst = group.sort((a, b) => Number(a.price) - Number(b.price));
       for (const option of cheapestFirst.slice(0, MAX_PER_COMPANY)) {
         const serviceName = String(option.name ?? "Frete").trim();
+        const price = Number(option.price);
         options.push({
           id: String(option.id),
           label: companyName ? `${companyName} - ${serviceName}` : serviceName,
-          cost: Number(option.price),
+          cost: price,
+          originalCost: price,
         });
       }
     }

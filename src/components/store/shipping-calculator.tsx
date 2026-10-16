@@ -4,9 +4,10 @@ import * as React from "react";
 import { Loader2, Truck } from "lucide-react";
 
 import { getShippingOptions } from "@/app/(store)/checkout/actions";
+import { ShippingPrice } from "@/components/store/shipping-price";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { formatCep, formatPrice, onlyDigits } from "@/lib/format";
+import { formatCep, onlyDigits } from "@/lib/format";
 import type { ShippingOption } from "@/lib/melhor-envio";
 
 /**
@@ -15,7 +16,15 @@ import type { ShippingOption } from "@/lib/melhor-envio";
  * checkout. A cotação final por quantidade/combinação de produtos é
  * sempre reconferida no checkout.
  */
-export function ShippingCalculator({ weightGrams }: { weightGrams: number }) {
+export function ShippingCalculator({
+  weightGrams,
+  price,
+}: {
+  weightGrams: number;
+  /** Preço do produto (1 unidade) — usado só pra já aplicar o frete grátis
+   * acima do valor mínimo nessa estimativa, se for o caso. */
+  price: number;
+}) {
   const [cep, setCep] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
   const [options, setOptions] = React.useState<ShippingOption[] | null>(null);
@@ -32,7 +41,7 @@ export function ShippingCalculator({ weightGrams }: { weightGrams: number }) {
 
     setError(null);
     setIsLoading(true);
-    const result = await getShippingOptions(digits, weightGrams);
+    const result = await getShippingOptions(digits, weightGrams, price);
     setOptions(result);
     setIsLoading(false);
   }
@@ -61,7 +70,7 @@ export function ShippingCalculator({ weightGrams }: { weightGrams: number }) {
           {options.map((option) => (
             <li key={option.id} className="flex justify-between gap-2">
               <span className="text-muted-foreground">{option.label}</span>
-              <span>{formatPrice(option.cost)}</span>
+              <ShippingPrice cost={option.cost} originalCost={option.originalCost} />
             </li>
           ))}
         </ul>

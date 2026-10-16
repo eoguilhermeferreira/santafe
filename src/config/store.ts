@@ -26,13 +26,13 @@ export const storeConfig = {
     cep: "18700070",
   },
 
-  /**
-   * Frete simplificado: valor fixo nacional, sem gratuidade por faixa de
-   * valor. Entrega pra todo o Brasil. Provisório até entrar a integração
-   * com o Melhor Envio (cotação real por CEP/peso).
-   */
   shipping: {
+    /** Frete fixo nacional usado como reserva quando o Melhor Envio não
+     * está configurado ou não consegue cotar. Entrega pra todo o Brasil. */
     flatRateCents: 1000,
+    /** Compras a partir desse valor (em reais) têm frete grátis — o
+     * cliente ainda escolhe a transportadora, só não paga por ela. */
+    freeShippingThresholdCents: 20000,
   },
 
   /** Frases que giram na barra fixa no topo da loja, acima do header. */
@@ -42,5 +42,6 @@ export const storeConfig = {
     "Sua fé, presente em cada detalhe",
     "Parcelamos no cartão",
     "Somos nota 5 ⭐️ no Google",
+    "Compras acima de R$200, frete grátis",
   ],
 } as const;
