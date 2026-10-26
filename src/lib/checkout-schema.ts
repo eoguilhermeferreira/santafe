@@ -1,14 +1,19 @@
 import { z } from "zod";
 
+import { isValidCpf } from "@/lib/cpf";
+
 /**
  * Endereço só é obrigatório quando o cliente escolhe entrega — quem
- * retira na loja não precisa preencher nada disso.
+ * retira na loja não precisa preencher nada disso. CPF, por outro lado,
+ * é obrigatório sempre (entrega ou retirada) — pedido sem CPF obrigava a
+ * loja a mandar mensagem pro cliente pedindo depois.
  */
 export const checkoutSchema = z
   .object({
     customerName: z.string().trim().min(3, "Informe seu nome completo"),
     email: z.string().trim().email("E-mail inválido"),
     phone: z.string().trim().min(10, "Informe um telefone com DDD"),
+    cpf: z.string().trim(),
     deliveryMethod: z.enum(["entrega", "retirada"]),
     cep: z.string().trim().default(""),
     street: z.string().trim().default(""),
@@ -20,6 +25,9 @@ export const checkoutSchema = z
     paymentMethod: z.enum(["pix", "cartao_credito", "cartao_debito", "boleto"]),
   })
   .superRefine((data, ctx) => {
+    if (!isValidCpf(data.cpf)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["cpf"], message: "CPF inválido" });
+    }
     if (data.deliveryMethod !== "entrega") return;
     if (data.cep.length !== 8) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["cep"], message: "CEP inválido" });

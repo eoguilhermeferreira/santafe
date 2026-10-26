@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { storeConfig } from "@/config/store";
-import { formatDateTime, formatPrice, onlyDigits } from "@/lib/format";
+import { formatCpf, formatDateTime, formatPrice, onlyDigits } from "@/lib/format";
 import type { DeliveryStatus, OrderWithItems, PaymentStatus } from "@/types/database.types";
 
 export function OrderDetail({ order }: { order: OrderWithItems }) {
@@ -119,6 +119,9 @@ export function OrderDetail({ order }: { order: OrderWithItems }) {
             </div>
             <p className="text-sm">{order.customer_name}</p>
             <p className="text-sm text-muted-foreground">{order.email} · {order.phone}</p>
+            <p className="text-sm text-muted-foreground">
+              CPF: {order.cpf ? formatCpf(order.cpf) : "não informado"}
+            </p>
             <p className="text-sm text-muted-foreground">
               {address.street}, {address.number}
               {address.complement ? ` - ${address.complement}` : ""} · {address.neighborhood}

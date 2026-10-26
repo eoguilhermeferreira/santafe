@@ -182,6 +182,7 @@ export interface Database {
           customer_name: string;
           email: string;
           phone: string;
+          cpf: string;
           customer_id: string | null;
           shipping_address: ShippingAddress;
           subtotal: number;
@@ -206,6 +207,7 @@ export interface Database {
           customer_name: string;
           email: string;
           phone: string;
+          cpf: string;
           shipping_address: ShippingAddress;
           subtotal: number;
           total: number;

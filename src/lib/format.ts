@@ -34,6 +34,15 @@ export function formatCep(value: string): string {
   return digits.length > 5 ? `${digits.slice(0, 5)}-${digits.slice(5)}` : digits;
 }
 
+/** Formata CPF como 000.000.000-00 conforme o cliente digita. */
+export function formatCpf(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  return digits
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+}
+
 export function onlyDigits(value: string): string {
   return value.replace(/\D/g, "");
 }

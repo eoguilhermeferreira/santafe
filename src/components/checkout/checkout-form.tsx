@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { storeConfig } from "@/config/store";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/checkout-schema";
-import { formatCep, formatPrice, onlyDigits } from "@/lib/format";
+import { formatCep, formatCpf, formatPrice, onlyDigits } from "@/lib/format";
 import { fetchAddressByCep } from "@/lib/viacep";
 import type { DeliveryMethod, PaymentMethod } from "@/types/database.types";
 import type { ShippingOption } from "@/lib/melhor-envio";
@@ -45,6 +45,7 @@ const EMPTY_FORM: AddressState = {
   customerName: "",
   email: "",
   phone: "",
+  cpf: "",
   cep: "",
   street: "",
   number: "",
@@ -106,6 +107,7 @@ export function CheckoutForm() {
     const parsed = checkoutSchema.safeParse({
       ...form,
       cep: onlyDigits(form.cep),
+      cpf: onlyDigits(form.cpf),
       deliveryMethod,
       paymentMethod,
     });
@@ -184,6 +186,14 @@ export function CheckoutForm() {
               </Field>
               <Field label="Telefone (WhatsApp)" error={errors.phone}>
                 <Input value={form.phone} onChange={(e) => updateField("phone", e.target.value)} />
+              </Field>
+              <Field label="CPF" error={errors.cpf}>
+                <Input
+                  value={formatCpf(form.cpf)}
+                  onChange={(e) => updateField("cpf", e.target.value)}
+                  inputMode="numeric"
+                  placeholder="000.000.000-00"
+                />
               </Field>
             </div>
           </Card>
