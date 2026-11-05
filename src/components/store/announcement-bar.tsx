@@ -1,70 +1,41 @@
-"use client";
-
-import * as React from "react";
 import { BookOpenText, CreditCard, Star, Truck } from "lucide-react";
 
 import { CrucifixIcon } from "@/components/icons/religious-icons";
 import { storeConfig } from "@/config/store";
-import { cn } from "@/lib/utils";
-
-const ROTATE_MS = 3800;
-const EXIT_MS = 450;
-
-type Phase = "idle" | "exiting" | "entering";
 
 // Um ícone pra cada frase de storeConfig.announcements, na mesma ordem.
 const ICONS = [Truck, BookOpenText, CrucifixIcon, CreditCard, Star];
 
 /**
- * Barra fixa no topo da loja com frases que giram sozinhas: a frase atual
- * desce e desaparece, a próxima entra por cima e desce até o lugar — dá
- * a sensação de uma esteira descendo, não um corte seco.
+ * Barra fixa no topo da loja com as frases passando em esteira contínua
+ * (direita pra esquerda), sem parar. O conteúdo é duplicado uma vez e a
+ * animação anda exatamente 50% da largura — quando a cópia chega no lugar
+ * da original, o CSS reinicia o loop sem dar pra perceber a emenda.
  */
 export function AnnouncementBar() {
   const messages = storeConfig.announcements;
-  const [index, setIndex] = React.useState(0);
-  const [phase, setPhase] = React.useState<Phase>("idle");
 
-  React.useEffect(() => {
-    if (messages.length <= 1) return;
-
-    let exitTimeout: ReturnType<typeof setTimeout>;
-    const interval = setInterval(() => {
-      setPhase("exiting");
-      exitTimeout = setTimeout(() => {
-        setIndex((current) => (current + 1) % messages.length);
-        setPhase("entering");
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => setPhase("idle"));
-        });
-      }, EXIT_MS);
-    }, ROTATE_MS);
-
-    return () => {
-      clearInterval(interval);
-      clearTimeout(exitTimeout);
-    };
-  }, [messages.length]);
-
-  const Icon = ICONS[index % ICONS.length];
+  const track = (
+    <div className="flex shrink-0 items-center">
+      {messages.map((message, index) => {
+        const Icon = ICONS[index % ICONS.length];
+        return (
+          <span key={index} className="flex items-center gap-2 px-6">
+            <Icon className="size-3.5 shrink-0 sm:size-4" />
+            <span className="whitespace-nowrap text-xs font-medium tracking-wide sm:text-sm">
+              {message}
+            </span>
+          </span>
+        );
+      })}
+    </div>
+  );
 
   return (
     <div className="h-9 overflow-hidden bg-primary text-primary-foreground">
-      <div className="mx-auto flex h-full max-w-7xl items-center justify-center px-4">
-        <div
-          className={cn(
-            "flex items-center gap-2",
-            phase === "entering" ? "transition-none" : "transition-all duration-500 ease-in-out",
-            phase === "exiting" && "translate-y-4 opacity-0",
-            phase === "entering" && "-translate-y-4 opacity-0",
-            phase === "idle" && "translate-y-0 opacity-100"
-          )}
-        >
-          <Icon className="size-3.5 shrink-0 sm:size-4" />
-          <p className="text-center text-xs font-medium tracking-wide sm:text-sm">
-            {messages[index]}
-          </p>
-        </div>
+      <div className="flex h-full w-max animate-marquee items-center">
+        {track}
+        {track}
       </div>
     </div>
   );
