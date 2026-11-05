@@ -181,6 +181,28 @@ export function Header({ categories }: { categories: Category[] }) {
         </div>
       </div>
 
+      {topLevel.length > 0 && (
+        <nav
+          aria-label="Categorias"
+          className={cn(
+            "border-t transition-colors duration-300",
+            isHomeOverlay ? "border-white/20 text-white" : "border-border text-foreground"
+          )}
+        >
+          <div className="mx-auto flex max-w-7xl items-center gap-5 overflow-x-auto px-4 py-2.5 sm:gap-6">
+            {topLevel.map((category) => (
+              <Link
+                key={category.id}
+                href={`/categoria/${category.slug}`}
+                className="shrink-0 text-xs font-medium uppercase tracking-wide opacity-90 transition-opacity hover:opacity-100 sm:text-sm"
+              >
+                {category.name}
+              </Link>
+            ))}
+          </div>
+        </nav>
+      )}
+
       <Sheet open={searchOpen} onOpenChange={setSearchOpen}>
         <SheetContent side="top" className="md:hidden">
           <SheetHeader className="sr-only">

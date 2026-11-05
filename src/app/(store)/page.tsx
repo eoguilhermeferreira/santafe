@@ -2,7 +2,6 @@ import Link from "next/link";
 
 import { AboutSection } from "@/components/store/about-section";
 import { BannerCarousel } from "@/components/store/banner-carousel";
-import { CategoryGrid } from "@/components/store/category-grid";
 import { FaqAccordion } from "@/components/store/faq-accordion";
 import { GoogleReviews } from "@/components/store/google-reviews";
 import { PromoBanner, PromoSquareBanner } from "@/components/store/promo-banner";
@@ -10,12 +9,7 @@ import { ProductSection } from "@/components/store/product-section";
 import { Reveal } from "@/components/store/reveal";
 import { storeConfig } from "@/config/store";
 import { FAQ_ITEMS } from "@/lib/faq";
-import {
-  getBannersBySlot,
-  getCategories,
-  getProducts,
-  getProductsByHomeSection,
-} from "@/lib/queries";
+import { getBannersBySlot, getProducts, getProductsByHomeSection } from "@/lib/queries";
 import { withTimeout } from "@/lib/with-timeout";
 import type { Banner, BannerSlot } from "@/types/database.types";
 
@@ -35,10 +29,9 @@ export default async function HomePage() {
   // Teto de 6s por consulta — se o Supabase estiver lento, a home renderiza
   // com essa seção vazia em vez de a página inteira estourar o timeout da
   // Vercel e cair com "Gateway Timeout".
-  const [bannerSlots, categories, maisVendidos, novidades, ofertas, imagens, tercos] =
+  const [bannerSlots, maisVendidos, novidades, ofertas, imagens, tercos] =
     await Promise.all([
       withTimeout(getBannersBySlot(), 6000, EMPTY_BANNER_SLOTS),
-      withTimeout(getCategories(), 6000, []),
       withTimeout(getProductsByHomeSection("mais_vendidos", 8, { random: true }), 6000, []),
       withTimeout(getProductsByHomeSection("novidades", 8, { random: true }), 6000, []),
       withTimeout(getProductsByHomeSection("ofertas", 8, { random: true }), 6000, []),
@@ -66,10 +59,6 @@ export default async function HomePage() {
 
         <Reveal>
           <GoogleReviews />
-        </Reveal>
-
-        <Reveal>
-          <CategoryGrid categories={categories} />
         </Reveal>
 
         <Reveal>
