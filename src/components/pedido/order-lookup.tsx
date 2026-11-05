@@ -177,6 +177,12 @@ export function OrderLookup({ initialOrderNumber }: { initialOrderNumber?: strin
               <span className="text-muted-foreground">Subtotal</span>
               <span>{formatPrice(order.subtotal)}</span>
             </div>
+            {order.discount > 0 && (
+              <div className="flex justify-between text-emerald-600">
+                <span>{order.discountLabel ?? "Desconto"}</span>
+                <span>-{formatPrice(order.discount)}</span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span className="text-muted-foreground">{order.shippingMethod ?? "Frete"}</span>
               <span>{formatPrice(order.shippingCost)}</span>

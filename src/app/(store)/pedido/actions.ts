@@ -28,6 +28,8 @@ export interface OrderLookupResult {
     subtotal: number;
     shippingCost: number;
     shippingMethod: string | null;
+    discount: number;
+    discountLabel: string | null;
     total: number;
     paymentStatus: PaymentStatus;
     deliveryStatus: DeliveryStatus;
@@ -84,6 +86,8 @@ export async function lookupOrder(input: unknown): Promise<OrderLookupResult> {
       subtotal: order.subtotal,
       shippingCost: order.shipping_cost,
       shippingMethod: order.shipping_method,
+      discount: order.discount,
+      discountLabel: order.discount_label,
       total: order.total,
       paymentStatus: order.payment_status,
       deliveryStatus: order.delivery_status,

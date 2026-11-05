@@ -35,6 +35,14 @@ export const storeConfig = {
     freeShippingThresholdCents: 20000,
   },
 
+  payments: {
+    /** Desconto automático pra quem paga no Pix — aplicado sobre o
+     * subtotal dos produtos (não sobre o frete). Ao escolher Pix o
+     * cliente fica travado nele até o fim do pagamento (sem poder trocar
+     * pra cartão na página do Mercado Pago e manter o desconto). */
+    pixDiscountPercent: 5,
+  },
+
   /** Frases que giram na barra fixa no topo da loja, acima do header. */
   announcements: [
     "Enviamos para todo o Brasil",

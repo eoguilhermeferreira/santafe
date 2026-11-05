@@ -187,6 +187,8 @@ export interface Database {
           shipping_address: ShippingAddress;
           subtotal: number;
           shipping_cost: number;
+          discount: number;
+          discount_label: string | null;
           total: number;
           shipping_method: string | null;
           tracking_code: string | null;

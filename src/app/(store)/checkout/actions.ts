@@ -1,6 +1,7 @@
 "use server";
 
 import { checkoutSchema, checkoutItemSchema } from "@/lib/checkout-schema";
+import { calculatePixDiscount } from "@/lib/discount";
 import { getMelhorEnvioOptions, type ShippingOption } from "@/lib/melhor-envio";
 import { getPreferenceClient } from "@/lib/mercadopago";
 import { calculateShipping } from "@/lib/shipping";
@@ -220,7 +221,8 @@ export async function createOrder(input: unknown): Promise<CreateOrderResult> {
     const shippingOptions = await getShippingOptions(customer.cep, totalWeightGrams, subtotal);
     shipping = shippingOptions.find((option) => option.id === shippingOptionId) ?? shippingOptions[0];
   }
-  const total = subtotal + shipping.cost;
+  const discount = calculatePixDiscount(subtotal, customer.paymentMethod);
+  const total = subtotal - discount.amount + shipping.cost;
   const customerId = await upsertCustomerFromCheckout(supabase, customer);
 
   // Pra retirada não coletamos endereço do cliente — o "endereço de
@@ -256,6 +258,8 @@ export async function createOrder(input: unknown): Promise<CreateOrderResult> {
       shipping_address: shippingAddress,
       subtotal,
       shipping_cost: shipping.cost,
+      discount: discount.amount,
+      discount_label: discount.label,
       total,
       shipping_method: shipping.label,
       payment_method: customer.paymentMethod,
@@ -305,7 +309,7 @@ export async function createCheckoutPreference(orderId: string): Promise<CreateP
   if (orderError || !order) return { error: "Pedido não encontrado." };
   if (order.payment_status === "pago") return { error: "Este pedido já foi pago." };
 
-  const items = order.order_items.map((item) => ({
+  const itemizedItems = order.order_items.map((item) => ({
     id: item.id,
     title: item.variation_value ? `${item.product_name} (${item.variation_value})` : item.product_name,
     quantity: item.quantity,
@@ -314,7 +318,7 @@ export async function createCheckoutPreference(orderId: string): Promise<CreateP
   }));
 
   if (order.shipping_cost > 0) {
-    items.push({
+    itemizedItems.push({
       id: "frete",
       title: order.shipping_method || "Frete",
       quantity: 1,
@@ -323,7 +327,37 @@ export async function createCheckoutPreference(orderId: string): Promise<CreateP
     });
   }
 
+  // O Mercado Pago não aceita item com preço negativo, então não dá pra
+  // detalhar um "desconto" linha a linha — com desconto aplicado, manda um
+  // item só no valor final, garantindo que o cobrado bate com order.total.
+  const items =
+    order.discount > 0
+      ? [
+          {
+            id: "pedido",
+            title: `Pedido #${order.order_number} — ${storeConfig.name}`,
+            quantity: 1,
+            unit_price: order.total,
+            currency_id: "BRL",
+          },
+        ]
+      : itemizedItems;
+
   const isProduction = storeConfig.siteUrl.startsWith("https://");
+
+  // Quem escolheu Pix recebeu o desconto já pensando só em Pix — trava a
+  // página do Mercado Pago pra não deixar trocar pra cartão/boleto e
+  // manter o desconto.
+  const paymentMethods =
+    order.payment_method === "pix"
+      ? {
+          excluded_payment_types: [
+            { id: "credit_card" },
+            { id: "debit_card" },
+            { id: "ticket" },
+          ],
+        }
+      : undefined;
 
   try {
     const preference = getPreferenceClient();
@@ -338,6 +372,7 @@ export async function createCheckoutPreference(orderId: string): Promise<CreateP
           failure: `${storeConfig.siteUrl}/checkout/erro?pedido=${order.order_number}`,
         },
         ...(isProduction ? { auto_return: "approved" as const } : {}),
+        ...(paymentMethods ? { payment_methods: paymentMethods } : {}),
         notification_url: `${storeConfig.siteUrl}/api/webhooks/mercadopago`,
         statement_descriptor: storeConfig.shortName,
       },

@@ -17,6 +17,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { storeConfig } from "@/config/store";
+import { calculatePixDiscount } from "@/lib/discount";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/checkout-schema";
 import { formatCep, formatCpf, formatPrice, onlyDigits } from "@/lib/format";
 import { fetchAddressByCep } from "@/lib/viacep";
@@ -24,7 +25,7 @@ import type { DeliveryMethod, PaymentMethod } from "@/types/database.types";
 import type { ShippingOption } from "@/lib/melhor-envio";
 
 const PAYMENT_OPTIONS: { value: PaymentMethod; label: string }[] = [
-  { value: "pix", label: "Pix" },
+  { value: "pix", label: `Pix (${storeConfig.payments.pixDiscountPercent}% OFF)` },
   { value: "cartao_credito", label: "Cartão de crédito" },
   { value: "cartao_debito", label: "Cartão de débito" },
   { value: "boleto", label: "Boleto" },
@@ -72,6 +73,9 @@ export function CheckoutForm() {
     deliveryMethod === "retirada"
       ? PICKUP_SHIPPING_OPTION
       : (shippingOptions.find((option) => option.id === selectedShippingId) ?? shippingOptions[0]);
+
+  const discount = calculatePixDiscount(subtotal, paymentMethod);
+  const total = subtotal - discount.amount + (shipping?.cost ?? 0);
 
   function updateField<K extends keyof AddressState>(key: K, value: AddressState[K]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -301,6 +305,13 @@ export function CheckoutForm() {
                 </button>
               ))}
             </div>
+            {paymentMethod === "pix" && (
+              <p className="text-xs text-muted-foreground">
+                O desconto do Pix já vem aplicado na próxima tela. Depois de ir pro
+                pagamento não dá pra trocar pra cartão mantendo o desconto — se mudar de
+                ideia, cancele e refaça o pedido escolhendo outra forma de pagamento.
+              </p>
+            )}
           </Card>
 
           <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
@@ -328,6 +339,13 @@ export function CheckoutForm() {
             <span className="text-muted-foreground">Subtotal</span>
             <span>{formatPrice(subtotal)}</span>
           </div>
+
+          {discount.amount > 0 && (
+            <div className="flex justify-between text-emerald-600">
+              <span>{discount.label}</span>
+              <span>-{formatPrice(discount.amount)}</span>
+            </div>
+          )}
 
           {deliveryMethod === "retirada" ? (
             <div className="flex justify-between">
@@ -387,7 +405,7 @@ export function CheckoutForm() {
         </div>
         <div className="flex justify-between border-t border-border pt-3 font-display text-lg font-semibold">
           <span>Total</span>
-          <span>{formatPrice(subtotal + (shipping?.cost ?? 0))}</span>
+          <span>{formatPrice(total)}</span>
         </div>
       </Card>
     </div>

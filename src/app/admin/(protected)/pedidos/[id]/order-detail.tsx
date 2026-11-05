@@ -99,6 +99,12 @@ export function OrderDetail({ order }: { order: OrderWithItems }) {
                 <span className="text-muted-foreground">Subtotal</span>
                 <span>{formatPrice(order.subtotal)}</span>
               </div>
+              {order.discount > 0 && (
+                <div className="flex justify-between text-emerald-600">
+                  <span>{order.discount_label ?? "Desconto"}</span>
+                  <span>-{formatPrice(order.discount)}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Frete ({order.shipping_method})</span>
                 <span>{formatPrice(order.shipping_cost)}</span>
