@@ -1,7 +1,7 @@
 "use server";
 
 import { checkoutSchema, checkoutItemSchema } from "@/lib/checkout-schema";
-import { calculatePixDiscount } from "@/lib/discount";
+import { calculateCouponDiscount, calculatePixDiscount, combineDiscounts } from "@/lib/discount";
 import { getMelhorEnvioOptions, type ShippingOption } from "@/lib/melhor-envio";
 import { getPreferenceClient } from "@/lib/mercadopago";
 import { calculateShipping } from "@/lib/shipping";
@@ -82,6 +82,7 @@ const createOrderInput = z.object({
   customer: checkoutSchema,
   items: z.array(checkoutItemSchema).min(1, "Carrinho vazio"),
   shippingOptionId: z.string().optional(),
+  couponCode: z.string().optional(),
 });
 
 export interface CreateOrderResult {
@@ -152,7 +153,7 @@ export async function createOrder(input: unknown): Promise<CreateOrderResult> {
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Dados inválidos" };
   }
-  const { customer, items, shippingOptionId } = parsed.data;
+  const { customer, items, shippingOptionId, couponCode } = parsed.data;
 
   const supabase = createAdminClient();
 
@@ -221,7 +222,9 @@ export async function createOrder(input: unknown): Promise<CreateOrderResult> {
     const shippingOptions = await getShippingOptions(customer.cep, totalWeightGrams, subtotal);
     shipping = shippingOptions.find((option) => option.id === shippingOptionId) ?? shippingOptions[0];
   }
-  const discount = calculatePixDiscount(subtotal, customer.paymentMethod);
+  const pixDiscount = calculatePixDiscount(subtotal, customer.paymentMethod);
+  const couponDiscount = calculateCouponDiscount(couponCode ?? "", subtotal);
+  const discount = combineDiscounts(pixDiscount, couponDiscount);
   const total = subtotal - discount.amount + shipping.cost;
   const customerId = await upsertCustomerFromCheckout(supabase, customer);
 

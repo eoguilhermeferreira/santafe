@@ -43,6 +43,12 @@ export const storeConfig = {
     pixDiscountPercent: 5,
   },
 
+  /** Cupons de desconto digitáveis no checkout — cada um só vale dentro da
+   * sua faixa de subtotal (em reais, sem contar o frete). */
+  coupons: [
+    { code: "SF10", percent: 10, minSubtotal: 99.9, maxSubtotal: 180 },
+  ],
+
   /** Frases que giram na barra fixa no topo da loja, acima do header. */
   announcements: [
     "Enviamos para todo o Brasil",

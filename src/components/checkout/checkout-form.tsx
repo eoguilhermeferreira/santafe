@@ -17,7 +17,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { storeConfig } from "@/config/store";
-import { calculatePixDiscount } from "@/lib/discount";
+import { calculateCouponDiscount, calculatePixDiscount, combineDiscounts } from "@/lib/discount";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/checkout-schema";
 import { formatCep, formatCpf, formatPrice, onlyDigits } from "@/lib/format";
 import { fetchAddressByCep } from "@/lib/viacep";
@@ -69,13 +69,34 @@ export function CheckoutForm() {
   const [selectedShippingId, setSelectedShippingId] = React.useState("");
   const [isShippingLoading, setIsShippingLoading] = React.useState(false);
 
+  const [couponInput, setCouponInput] = React.useState("");
+  const [appliedCoupon, setAppliedCoupon] = React.useState<string | null>(null);
+
   const shipping =
     deliveryMethod === "retirada"
       ? PICKUP_SHIPPING_OPTION
       : (shippingOptions.find((option) => option.id === selectedShippingId) ?? shippingOptions[0]);
 
-  const discount = calculatePixDiscount(subtotal, paymentMethod);
+  const pixDiscount = calculatePixDiscount(subtotal, paymentMethod);
+  const couponResult = appliedCoupon
+    ? calculateCouponDiscount(appliedCoupon, subtotal)
+    : { amount: 0, label: null };
+  const discount = combineDiscounts(pixDiscount, couponResult);
   const total = subtotal - discount.amount + (shipping?.cost ?? 0);
+
+  function handleApplyCoupon() {
+    const result = calculateCouponDiscount(couponInput, subtotal);
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+    if (result.amount === 0) {
+      toast.error("Digite um código de cupom");
+      return;
+    }
+    setAppliedCoupon(couponInput.trim().toUpperCase());
+    toast.success(result.label ?? "Cupom aplicado");
+  }
 
   function updateField<K extends keyof AddressState>(key: K, value: AddressState[K]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -136,6 +157,7 @@ export function CheckoutForm() {
         variationValue: item.variationValue,
       })),
       shippingOptionId: deliveryMethod === "entrega" ? selectedShippingId : undefined,
+      couponCode: appliedCoupon ?? undefined,
     });
 
     if (order.error || !order.orderId) {
@@ -334,6 +356,39 @@ export function CheckoutForm() {
             </li>
           ))}
         </ul>
+
+        <div className="space-y-1.5 border-t border-border pt-3">
+          {appliedCoupon ? (
+            <div className="flex items-center justify-between gap-2 text-sm">
+              <span className="text-muted-foreground">
+                Cupom <span className="font-medium text-foreground">{appliedCoupon}</span> aplicado
+              </span>
+              <button
+                type="button"
+                onClick={() => setAppliedCoupon(null)}
+                className="text-xs font-medium text-destructive hover:underline"
+              >
+                Remover
+              </button>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <Input
+                value={couponInput}
+                onChange={(e) => setCouponInput(e.target.value)}
+                placeholder="Cupom de desconto"
+                className="uppercase"
+              />
+              <Button type="button" variant="outline" onClick={handleApplyCoupon}>
+                Aplicar
+              </Button>
+            </div>
+          )}
+          {appliedCoupon && couponResult.error && (
+            <p className="text-xs text-destructive">{couponResult.error}</p>
+          )}
+        </div>
+
         <div className="space-y-2 border-t border-border pt-3 text-sm">
           <div className="flex justify-between">
             <span className="text-muted-foreground">Subtotal</span>
