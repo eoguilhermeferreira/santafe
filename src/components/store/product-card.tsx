@@ -3,11 +3,13 @@ import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { discountPercent, formatPrice } from "@/lib/format";
+import { getEffectivePromoPrice } from "@/lib/promo";
 import type { ProductWithRelations } from "@/types/database.types";
 
 export function ProductCard({ product }: { product: ProductWithRelations }) {
   const image = product.product_images[0];
-  const discount = discountPercent(product.price, product.promo_price);
+  const promoPrice = getEffectivePromoPrice(product);
+  const discount = discountPercent(product.price, promoPrice);
   const outOfStock =
     product.stock <= 0 && product.product_variations.every((v) => v.stock <= 0);
 
@@ -56,10 +58,10 @@ export function ProductCard({ product }: { product: ProductWithRelations }) {
       <div className="flex flex-1 flex-col gap-1 p-3">
         <h3 className="line-clamp-2 text-sm font-medium text-foreground">{product.name}</h3>
         <div className="mt-auto pt-1">
-          {product.promo_price ? (
+          {promoPrice ? (
             <div className="flex items-baseline gap-2">
               <span className="font-display text-base font-semibold text-primary">
-                {formatPrice(product.promo_price)}
+                {formatPrice(promoPrice)}
               </span>
               <span className="text-xs text-muted-foreground line-through">
                 {formatPrice(product.price)}

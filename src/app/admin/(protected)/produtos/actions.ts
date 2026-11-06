@@ -12,6 +12,7 @@ const productFormSchema = z.object({
   category_id: z.string().uuid().nullable(),
   price: z.number().nonnegative(),
   promo_price: z.number().nonnegative().nullable(),
+  promo_price_until: z.string().datetime().nullable(),
   stock: z.number().int().nonnegative(),
   weight_grams: z.number().int().positive(),
   is_active: z.boolean(),

@@ -2,6 +2,7 @@
 
 import { checkoutSchema, checkoutItemSchema } from "@/lib/checkout-schema";
 import { calculateCouponDiscount, calculatePixDiscount, combineDiscounts } from "@/lib/discount";
+import { getEffectivePromoPrice } from "@/lib/promo";
 import { getMelhorEnvioOptions, type ShippingOption } from "@/lib/melhor-envio";
 import { getPreferenceClient } from "@/lib/mercadopago";
 import { calculateShipping } from "@/lib/shipping";
@@ -189,6 +190,7 @@ export async function createOrder(input: unknown): Promise<CreateOrderResult> {
 
     let stock = product.stock;
     let variationLabel: string | null = null;
+    let variationPrice: number | null = null;
 
     if (item.variationValue) {
       const variation = product.product_variations.find(
@@ -197,13 +199,17 @@ export async function createOrder(input: unknown): Promise<CreateOrderResult> {
       if (!variation) return { error: `Variação indisponível para ${product.name}.` };
       stock = variation.stock;
       variationLabel = variation.label;
+      variationPrice = variation.price;
     }
 
     if (item.quantity > stock) {
       return { error: `Estoque insuficiente para ${product.name}.` };
     }
 
-    const unitPrice = product.promo_price ?? product.price;
+    // Bug corrigido: antes ignorava o preço próprio da variação (ex: tamanho
+    // GG mais caro) e a promoção com prazo já vencido — mesma prioridade
+    // usada na loja (variação > promoção ainda válida > preço normal).
+    const unitPrice = variationPrice ?? getEffectivePromoPrice(product) ?? product.price;
     subtotal += unitPrice * item.quantity;
 
     orderItems.push({

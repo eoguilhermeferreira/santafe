@@ -60,6 +60,7 @@ export interface Database {
           category_id: string | null;
           price: number;
           promo_price: number | null;
+          promo_price_until: string | null;
           stock: number;
           weight_grams: number;
           is_active: boolean;

@@ -32,6 +32,14 @@ import type { Category, HomeSection, ProductWithRelations } from "@/types/databa
 type Variation = { value: string; price: string; stock: number };
 type HomeSectionOption = HomeSection | "__none__";
 
+/** Converte um timestamp ISO (UTC, vindo do banco) pro formato que o input
+ * datetime-local espera, já no horário local de quem está vendo a tela. */
+function toDatetimeLocalValue(iso: string): string {
+  const date = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 export function ProductForm({
   categories,
   product,
@@ -49,6 +57,10 @@ export function ProductForm({
   const [categoryId, setCategoryId] = React.useState(product?.category_id ?? "__none__");
   const [price, setPrice] = React.useState(product?.price?.toString() ?? "");
   const [promoPrice, setPromoPrice] = React.useState(product?.promo_price?.toString() ?? "");
+  const [hasPromoDeadline, setHasPromoDeadline] = React.useState(Boolean(product?.promo_price_until));
+  const [promoUntil, setPromoUntil] = React.useState(
+    product?.promo_price_until ? toDatetimeLocalValue(product.promo_price_until) : ""
+  );
   const [stock, setStock] = React.useState(product?.stock?.toString() ?? "0");
   const [weight, setWeight] = React.useState(product?.weight_grams?.toString() ?? "200");
   const [isActive, setIsActive] = React.useState(product?.is_active ?? true);
@@ -172,6 +184,8 @@ export function ProductForm({
       category_id: categoryId === "__none__" ? null : categoryId,
       price: Number(price),
       promo_price: promoPrice ? Number(promoPrice) : null,
+      promo_price_until:
+        promoPrice && hasPromoDeadline && promoUntil ? new Date(promoUntil).toISOString() : null,
       stock: Number(stock),
       weight_grams: Number(weight),
       is_active: isActive,
@@ -277,6 +291,29 @@ export function ProductForm({
             <Input type="number" min="1" value={weight} onChange={(e) => setWeight(e.target.value)} />
           </div>
         </div>
+
+        {promoPrice && (
+          <div className="rounded-md border border-border p-3">
+            <div className="flex items-center gap-2">
+              <Switch checked={hasPromoDeadline} onCheckedChange={setHasPromoDeadline} />
+              <Label>Colocar prazo pra promoção?</Label>
+            </div>
+            {hasPromoDeadline && (
+              <div className="mt-3 max-w-xs">
+                <Label className="mb-1.5 block">Promoção válida até</Label>
+                <Input
+                  type="datetime-local"
+                  value={promoUntil}
+                  onChange={(e) => setPromoUntil(e.target.value)}
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Passando desse horário, o preço volta pro normal sozinho.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="flex flex-wrap items-center gap-6">
           <div className="flex items-center gap-2">
             <Switch checked={isActive} onCheckedChange={setIsActive} />
