@@ -76,6 +76,21 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
   return data;
 }
 
+/** Subcategorias ativas de uma categoria, pra montar as abas de filtro
+ * (ex: Editora Ave Maria / Paulus dentro de Bíblias). */
+export async function getSubcategories(parentId: string): Promise<Category[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("categories")
+    .select("*")
+    .eq("parent_id", parentId)
+    .eq("is_active", true)
+    .order("display_order", { ascending: true });
+
+  if (error) throw error;
+  return data;
+}
+
 function shuffle<T>(items: T[]): T[] {
   const result = [...items];
   for (let i = result.length - 1; i > 0; i--) {
